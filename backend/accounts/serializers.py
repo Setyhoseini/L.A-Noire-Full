@@ -1,0 +1,48 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from .models import Role
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    roles = serializers.StringRelatedField(many=True, read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'phone', 'national_code', 
+                  'first_name', 'last_name', 'roles']
+        read_only_fields = ['id']
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['id', 'name'] 
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'identifier'  # This will be the field name in request
+
+    def validate(self, attrs):
+        # attrs contains {'identifier': 'value', 'password': 'value'}
+        identifier = attrs.get('identifier')
+        password = attrs.get('password')
+
+        if identifier and password:
+            # Authenticate using our custom backend
+            user = authenticate(request=self.context.get('request'),
+                                username=identifier,  # our backend expects 'username' param
+                                password=password)
+            if not user:
+                raise serializers.ValidationError('No active account found with the given credentials')
+        else:
+            raise serializers.ValidationError('Must include "identifier" and "password"')
+
+        refresh = self.get_token(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserSerializer(user).data
+        }
+        return data
