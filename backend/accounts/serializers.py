@@ -7,14 +7,38 @@ from django.contrib.auth import authenticate
 
 User = get_user_model()
 
+
 class UserSerializer(serializers.ModelSerializer):
+    """Serializer for user read operations (profile, etc.)."""
     roles = serializers.StringRelatedField(many=True, read_only=True)
-    
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'national_code', 
+        fields = ['id', 'username', 'email', 'phone', 'national_code',
                   'first_name', 'last_name', 'roles']
         read_only_fields = ['id']
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    """Serializer for user registration. Includes password. Returns full user with roles."""
+    password = serializers.CharField(write_only=True, min_length=7)
+    roles = serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'phone', 'national_code',
+                  'first_name', 'last_name', 'password', 'roles']
+        read_only_fields = ['id', 'roles']
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        # Assign Base user role per PDF specification
+        base_role, _ = Role.objects.get_or_create(name='Base user')
+        user.roles.add(base_role)
+        return user
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:

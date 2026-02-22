@@ -9,7 +9,10 @@ class EmailPhoneNationalBackend(ModelBackend):
         # username here can be email, phone, or national_code
         try:
             user = User.objects.get(
-                Q(email=username) | Q(phone=username) | Q(national_code=username)
+                Q(username=username)
+                | Q(email=username)
+                | Q(phone=username)
+                | Q(national_code=username)
             )
         except User.DoesNotExist:
             return None

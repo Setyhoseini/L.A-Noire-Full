@@ -1,53 +1,44 @@
+/**
+ * Auth state: user and JWT access token.
+ * Token persisted in cookie. User in memory (or re-fetched from profile).
+ */
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import type { User } from '@/api/auth'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
-
-interface AuthUser {
-  accountNo: string
-  email: string
-  role: string[]
-  exp: number
-}
+const ACCESS_TOKEN_COOKIE = 'access_token'
 
 interface AuthState {
-  auth: {
-    user: AuthUser | null
-    setUser: (user: AuthUser | null) => void
-    accessToken: string
-    setAccessToken: (accessToken: string) => void
-    resetAccessToken: () => void
-    reset: () => void
-  }
+  user: User | null
+  accessToken: string
+  setUser: (user: User | null) => void
+  setAccessToken: (token: string) => void
+  resetAccessToken: () => void
+  reset: () => void
 }
 
 export const useAuthStore = create<AuthState>()((set) => {
-  const cookieState = getCookie(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
+  const stored = getCookie(ACCESS_TOKEN_COOKIE)
+  const initToken = stored ?? ''
+
   return {
-    auth: {
-      user: null,
-      setUser: (user) =>
-        set((state) => ({ ...state, auth: { ...state.auth, user } })),
-      accessToken: initToken,
-      setAccessToken: (accessToken) =>
-        set((state) => {
-          setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
-          return { ...state, auth: { ...state.auth, accessToken } }
-        }),
-      resetAccessToken: () =>
-        set((state) => {
-          removeCookie(ACCESS_TOKEN)
-          return { ...state, auth: { ...state.auth, accessToken: '' } }
-        }),
-      reset: () =>
-        set((state) => {
-          removeCookie(ACCESS_TOKEN)
-          return {
-            ...state,
-            auth: { ...state.auth, user: null, accessToken: '' },
-          }
-        }),
-    },
+    user: null,
+    accessToken: initToken,
+    setUser: (user) => set((state) => ({ ...state, user })),
+    setAccessToken: (token) =>
+      set((state) => {
+        setCookie(ACCESS_TOKEN_COOKIE, token)
+        return { ...state, accessToken: token }
+      }),
+    resetAccessToken: () =>
+      set((state) => {
+        removeCookie(ACCESS_TOKEN_COOKIE)
+        return { ...state, accessToken: '' }
+      }),
+    reset: () =>
+      set(() => {
+        removeCookie(ACCESS_TOKEN_COOKIE)
+        return { user: null, accessToken: '' }
+      }),
   }
 })

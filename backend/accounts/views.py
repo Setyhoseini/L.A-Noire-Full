@@ -2,7 +2,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from .serializers import UserSerializer
+from .serializers import UserSerializer, RegisterSerializer
 from .models import Role
 from rest_framework import viewsets
 from .serializers import RoleSerializer
@@ -41,17 +41,9 @@ class RoleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]  # only admin
 
 class RegisterView(generics.CreateAPIView):
-    serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]  # anyone can register
-
-    def perform_create(self, serializer):
-        user = serializer.save()
-        # Set password properly
-        user.set_password(self.request.data.get('password'))
-        # Assign default role 'user' (you need to create this role first)
-        user_role, _ = Role.objects.get_or_create(name='user')
-        user.roles.add(user_role)
-        user.save()
+    """User registration. Assigns 'Base user' role. Admin assigns other roles later."""
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

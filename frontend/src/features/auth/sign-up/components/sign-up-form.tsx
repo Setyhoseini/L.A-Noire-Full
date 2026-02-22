@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconFacebook, IconGithub } from '@/assets/brand-icons'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { register as registerApi } from '@/api/auth'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,18 +21,26 @@ import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z
   .object({
-    email: z.email({
-      error: (iss) =>
-        iss.input === '' ? 'Please enter your email' : undefined,
-    }),
+    username: z.string().min(1, 'Username is required'),
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Enter a valid email'),
+    phone: z.string().min(1, 'Phone number is required'),
+    national_code: z
+      .string()
+      .length(10, 'National code must be 10 digits')
+      .regex(/^\d+$/, 'National code must contain only digits'),
+    first_name: z.string().min(1, 'First name is required'),
+    last_name: z.string().min(1, 'Last name is required'),
     password: z
       .string()
-      .min(1, 'Please enter your password')
-      .min(7, 'Password must be at least 7 characters long'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+      .min(1, 'Password is required')
+      .min(7, 'Password must be at least 7 characters'),
+    confirmPassword: z.string().min(1, 'Confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
+    message: "Passwords don't match",
     path: ['confirmPassword'],
   })
 
@@ -38,24 +49,75 @@ export function SignUpForm({
   ...props
 }: React.HTMLAttributes<HTMLFormElement>) {
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      username: '',
       email: '',
+      phone: '',
+      national_code: '',
+      first_name: '',
+      last_name: '',
       password: '',
       confirmPassword: '',
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
+    try {
+      await registerApi({
+        username: data.username,
+        email: data.email,
+        phone: data.phone,
+        national_code: data.national_code,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        password: data.password,
+      })
+      toast.success('Account created. Please sign in.')
+      navigate({ to: '/sign-in', replace: true })
+    } catch (err: unknown) {
+      // Log full error for debugging
+      if (import.meta.env.DEV) {
+        console.error('Registration error:', err)
+      }
+      const res =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: unknown; status?: number } }).response
+              ?.data
+          : null
+      const status =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : 0
 
-    setTimeout(() => {
+      let message = 'Registration failed'
+      if (res && typeof res === 'object') {
+        const data = res as Record<string, unknown>
+        if (typeof data.detail === 'string') {
+          message = data.detail
+        } else if (Array.isArray(data.detail)) {
+          message = String(data.detail[0] ?? message)
+        } else {
+          const firstMsg = Object.values(data)
+            .flat()
+            .find((v) => typeof v === 'string' || (Array.isArray(v) && v[0]))
+          message = Array.isArray(firstMsg)
+            ? String(firstMsg[0])
+            : typeof firstMsg === 'string'
+              ? firstMsg
+              : message
+        }
+      } else if (status === 0) {
+        message = 'Cannot reach server. Is the backend running?'
+      }
+      toast.error(message)
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (
@@ -65,6 +127,47 @@ export function SignUpForm({
         className={cn('grid gap-3', className)}
         {...props}
       >
+        <div className='grid grid-cols-2 gap-3'>
+          <FormField
+            control={form.control}
+            name='first_name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First name</FormLabel>
+                <FormControl>
+                  <Input placeholder='John' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name='last_name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last name</FormLabel>
+                <FormControl>
+                  <Input placeholder='Doe' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <FormField
+          control={form.control}
+          name='username'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder='johndoe' autoComplete='username' {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name='email'
@@ -72,7 +175,38 @@ export function SignUpForm({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  type='email'
+                  placeholder='name@example.com'
+                  autoComplete='email'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='phone'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder='09123456789' autoComplete='tel' {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='national_code'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>National code</FormLabel>
+              <FormControl>
+                <Input placeholder='1234567890' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,7 +230,7 @@ export function SignUpForm({
           name='confirmPassword'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>Confirm password</FormLabel>
               <FormControl>
                 <PasswordInput placeholder='********' {...field} />
               </FormControl>
@@ -104,39 +238,10 @@ export function SignUpForm({
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
-          Create Account
+        <Button className='mt-2' type='submit' disabled={isLoading}>
+          {isLoading && <Loader2 className='me-2 size-4 animate-spin' />}
+          Create account
         </Button>
-
-        <div className='relative my-2'>
-          <div className='absolute inset-0 flex items-center'>
-            <span className='w-full border-t' />
-          </div>
-          <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background px-2 text-muted-foreground'>
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className='grid grid-cols-2 gap-2'>
-          <Button
-            variant='outline'
-            className='w-full'
-            type='button'
-            disabled={isLoading}
-          >
-            <IconGithub className='h-4 w-4' /> GitHub
-          </Button>
-          <Button
-            variant='outline'
-            className='w-full'
-            type='button'
-            disabled={isLoading}
-          >
-            <IconFacebook className='h-4 w-4' /> Facebook
-          </Button>
-        </div>
       </form>
     </Form>
   )

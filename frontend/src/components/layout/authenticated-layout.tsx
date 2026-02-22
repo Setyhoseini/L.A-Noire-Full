@@ -6,6 +6,7 @@ import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
+import { AuthUserLoader } from '@/components/auth-user-loader'
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
@@ -14,8 +15,9 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
   return (
-    <SearchProvider>
-      <LayoutProvider>
+    <AuthUserLoader>
+      <SearchProvider>
+        <LayoutProvider>
         <SidebarProvider defaultOpen={defaultOpen}>
           <SkipToMain />
           <AppSidebar />
@@ -38,5 +40,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         </SidebarProvider>
       </LayoutProvider>
     </SearchProvider>
+    </AuthUserLoader>
   )
 }
