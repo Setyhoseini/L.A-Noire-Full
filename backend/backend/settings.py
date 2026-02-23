@@ -67,7 +67,7 @@ MIDDLEWARE = [
 ]
 
 # Custom user model
-AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'accounts.User'
 
 # REST Framework settings
 REST_FRAMEWORK = {
