@@ -71,7 +71,7 @@ class Person(models.Model):
 		app_label = 'accounts'
 
 	def full_name(self):
-		
+
 		return f"{self.first_name} {self.last_name}"
 
 	def __str__(self):
@@ -139,3 +139,62 @@ class UserRole(models.Model):
         unique_together = ('user', 'role')  # هر کاربر یک نقش را فقط یک بار می‌تواند داشته باشد
         verbose_name = "نقش کاربر"
         verbose_name_plural = "نقش‌های کاربران"
+
+class Suspect(models.Model):
+	STATUS_CHOICES = [
+		('UNDER_PURSUIT', 'Under Pursuit'),
+		('HOT_PURSUIT', 'Hot Pursuit'),
+		('CAPTURED', 'Captured'),
+		('RELEASED', 'Released'),
+	]
+
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	person = models.ForeignKey('accounts.Person', on_delete=models.CASCADE, related_name='suspect_entries')
+	case = models.ForeignKey('cases.Case', on_delete=models.CASCADE, related_name='suspects')
+	status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='UNDER_PURSUIT')
+	start_date = models.DateField(default=timezone.now)
+	last_status_update = models.DateField(null=True, blank=True)
+	crime_degree = models.IntegerField(null=True, blank=True)
+
+	class Meta:
+		ordering = ['-start_date']
+		app_label = 'cases'
+
+	def __str__(self):
+		return f"Suspect {self.person} in {self.case} ({self.status})"
+
+	@property
+	def days_under_pursuit(self):
+		from django.utils import timezone as _tz
+		if not self.start_date:
+			return 0
+		return (_tz.now().date() - self.start_date).days
+
+	def update_status_if_expired(self, threshold_days=30):
+		if self.status == 'UNDER_PURSUIT' and self.days_under_pursuit >= threshold_days:
+			self.status = 'HOT_PURSUIT'
+			self.last_status_update = timezone.now().date()
+			self.save()
+			return True
+		return False
+
+class CasePerson(models.Model):
+    ROLE_CHOICES = [
+        ('complainant', 'Complainant'),
+        ('witness', 'Witness'),
+        ('suspect', 'Suspect'),
+        ('victim', 'Victim'),
+        ('other', 'Other'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    case = models.ForeignKey('cases.Case', on_delete=models.CASCADE, related_name='case_people')
+    person = models.ForeignKey('accounts.Person', on_delete=models.CASCADE, related_name='case_roles')
+    role_in_case = models.CharField(max_length=32, choices=ROLE_CHOICES, default='other')
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('case', 'person', 'role_in_case')
+
+    def __str__(self):
+        return f"{self.person} as {self.role_in_case} in {self.case}"

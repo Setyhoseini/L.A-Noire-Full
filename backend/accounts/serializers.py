@@ -3,9 +3,12 @@ from django.contrib.auth import get_user_model
 from .models import Role
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
+from . import models as people_models
+
 
 
 User = get_user_model()
+
 
 
 class UserSerializer(serializers.ModelSerializer):
