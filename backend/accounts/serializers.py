@@ -3,12 +3,9 @@ from django.contrib.auth import get_user_model
 from .models import Role
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
-from . import models as people_models
-
 
 
 User = get_user_model()
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'national_code',
+        fields = ['id', 'username', 'email', 'phone_number', 'national_id',
                   'first_name', 'last_name', 'roles']
         read_only_fields = ['id']
 
@@ -29,7 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone', 'national_code',
+        fields = ['id', 'username', 'email', 'phone_number', 'national_id',
                   'first_name', 'last_name', 'password', 'roles']
         read_only_fields = ['id', 'roles']
 

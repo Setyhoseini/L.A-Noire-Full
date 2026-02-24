@@ -7,10 +7,10 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { AppTitle } from './app-title'
-import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { useAuthStore } from '@/stores/auth-store'
+import { getNavGroupsForRoles } from '@/config/nav-roles'
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
@@ -24,13 +24,16 @@ export function AppSidebar() {
       }
     : { name: 'Loading...', email: '', avatar: '' }
 
+  const roles = user?.roles ?? []
+  const navGroups = getNavGroupsForRoles(roles)
+
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
         <AppTitle />
       </SidebarHeader>
       <SidebarContent>
-        {sidebarData.navGroups.map((props) => (
+        {navGroups.map((props) => (
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>

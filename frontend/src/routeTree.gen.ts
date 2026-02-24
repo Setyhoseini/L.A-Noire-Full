@@ -22,6 +22,12 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
+import { Route as AuthenticatedMostWantedIndexRouteImport } from './routes/_authenticated/most-wanted/index'
+import { Route as AuthenticatedEvidenceIndexRouteImport } from './routes/_authenticated/evidence/index'
+import { Route as AuthenticatedCasesIndexRouteImport } from './routes/_authenticated/cases/index'
+import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board/index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -94,6 +100,39 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedReportsIndexRoute =
+  AuthenticatedReportsIndexRouteImport.update({
+    id: '/reports/',
+    path: '/reports/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMostWantedIndexRoute =
+  AuthenticatedMostWantedIndexRouteImport.update({
+    id: '/most-wanted/',
+    path: '/most-wanted/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEvidenceIndexRoute =
+  AuthenticatedEvidenceIndexRouteImport.update({
+    id: '/evidence/',
+    path: '/evidence/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCasesIndexRoute = AuthenticatedCasesIndexRouteImport.update({
+  id: '/cases/',
+  path: '/cases/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBoardIndexRoute = AuthenticatedBoardIndexRouteImport.update({
+  id: '/board/',
+  path: '/board/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -142,6 +181,12 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/board/': typeof AuthenticatedBoardIndexRoute
+  '/cases/': typeof AuthenticatedCasesIndexRoute
+  '/evidence/': typeof AuthenticatedEvidenceIndexRoute
+  '/most-wanted/': typeof AuthenticatedMostWantedIndexRoute
+  '/reports/': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -160,6 +205,12 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/board': typeof AuthenticatedBoardIndexRoute
+  '/cases': typeof AuthenticatedCasesIndexRoute
+  '/evidence': typeof AuthenticatedEvidenceIndexRoute
+  '/most-wanted': typeof AuthenticatedMostWantedIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -181,6 +232,12 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
+  '/_authenticated/cases/': typeof AuthenticatedCasesIndexRoute
+  '/_authenticated/evidence/': typeof AuthenticatedEvidenceIndexRoute
+  '/_authenticated/most-wanted/': typeof AuthenticatedMostWantedIndexRoute
+  '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -202,6 +259,12 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/admin/'
+    | '/board/'
+    | '/cases/'
+    | '/evidence/'
+    | '/most-wanted/'
+    | '/reports/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -220,6 +283,12 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/admin'
+    | '/board'
+    | '/cases'
+    | '/evidence'
+    | '/most-wanted'
+    | '/reports'
     | '/settings'
   id:
     | '__root__'
@@ -240,6 +309,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/admin/'
+    | '/_authenticated/board/'
+    | '/_authenticated/cases/'
+    | '/_authenticated/evidence/'
+    | '/_authenticated/most-wanted/'
+    | '/_authenticated/reports/'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -349,6 +424,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/reports/': {
+      id: '/_authenticated/reports/'
+      path: '/reports'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/most-wanted/': {
+      id: '/_authenticated/most-wanted/'
+      path: '/most-wanted'
+      fullPath: '/most-wanted/'
+      preLoaderRoute: typeof AuthenticatedMostWantedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/evidence/': {
+      id: '/_authenticated/evidence/'
+      path: '/evidence'
+      fullPath: '/evidence/'
+      preLoaderRoute: typeof AuthenticatedEvidenceIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cases/': {
+      id: '/_authenticated/cases/'
+      path: '/cases'
+      fullPath: '/cases/'
+      preLoaderRoute: typeof AuthenticatedCasesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/board/': {
+      id: '/_authenticated/board/'
+      path: '/board'
+      fullPath: '/board/'
+      preLoaderRoute: typeof AuthenticatedBoardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
@@ -414,12 +531,24 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
+  AuthenticatedCasesIndexRoute: typeof AuthenticatedCasesIndexRoute
+  AuthenticatedEvidenceIndexRoute: typeof AuthenticatedEvidenceIndexRoute
+  AuthenticatedMostWantedIndexRoute: typeof AuthenticatedMostWantedIndexRoute
+  AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
+  AuthenticatedCasesIndexRoute: AuthenticatedCasesIndexRoute,
+  AuthenticatedEvidenceIndexRoute: AuthenticatedEvidenceIndexRoute,
+  AuthenticatedMostWantedIndexRoute: AuthenticatedMostWantedIndexRoute,
+  AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

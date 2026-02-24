@@ -26,11 +26,15 @@ const formSchema = z
       .string()
       .min(1, 'Email is required')
       .email('Enter a valid email'),
-    phone: z.string().min(1, 'Phone number is required'),
-    national_code: z
+    phone_number: z
       .string()
-      .length(10, 'National code must be 10 digits')
-      .regex(/^\d+$/, 'National code must contain only digits'),
+      .min(1, 'Phone number is required')
+      .max(32, 'Phone number too long'),
+    national_id: z
+      .string()
+      .min(1, 'National code is required')
+      .regex(/^\d+$/, 'National code must contain only digits')
+      .refine((v) => v.length >= 10 && v.length <= 32, 'National code: 10–32 digits'),
     first_name: z.string().min(1, 'First name is required'),
     last_name: z.string().min(1, 'Last name is required'),
     password: z
@@ -56,8 +60,8 @@ export function SignUpForm({
     defaultValues: {
       username: '',
       email: '',
-      phone: '',
-      national_code: '',
+      phone_number: '',
+      national_id: '',
       first_name: '',
       last_name: '',
       password: '',
@@ -71,8 +75,8 @@ export function SignUpForm({
       await registerApi({
         username: data.username,
         email: data.email,
-        phone: data.phone,
-        national_code: data.national_code,
+        phone_number: data.phone_number,
+        national_id: data.national_id,
         first_name: data.first_name,
         last_name: data.last_name,
         password: data.password,
@@ -188,7 +192,7 @@ export function SignUpForm({
         />
         <FormField
           control={form.control}
-          name='phone'
+          name='phone_number'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone</FormLabel>
@@ -201,7 +205,7 @@ export function SignUpForm({
         />
         <FormField
           control={form.control}
-          name='national_code'
+          name='national_id'
           render={({ field }) => (
             <FormItem>
               <FormLabel>National code</FormLabel>

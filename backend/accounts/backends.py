@@ -6,13 +6,13 @@ User = get_user_model()
 
 class EmailPhoneNationalBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        # username here can be email, phone, or national_code
+        # username here can be email, phone_number, or national_id
         try:
             user = User.objects.get(
                 Q(username=username)
                 | Q(email=username)
-                | Q(phone=username)
-                | Q(national_code=username)
+                | Q(phone_number=username)
+                | Q(national_id=username)
             )
         except User.DoesNotExist:
             return None

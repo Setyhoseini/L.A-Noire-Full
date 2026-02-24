@@ -1,6 +1,7 @@
 /**
  * Auth API - login, register, profile.
- * All types match backend UserSerializer and JWT response.
+ * Types match backend UserSerializer and JWT response.
+ * Backend User: username, email, phone_number, national_id, first_name, last_name, roles.
  */
 import { apiClient } from '@/lib/api-client'
 
@@ -9,8 +10,8 @@ export interface User {
   id: number
   username: string
   email: string
-  phone: string
-  national_code: string
+  phone_number: string | null
+  national_id: string | null
   first_name: string
   last_name: string
   roles: string[]
@@ -23,19 +24,19 @@ export interface LoginResponse {
   user: User
 }
 
-/** Registration payload */
+/** Registration payload - field names match backend */
 export interface RegisterPayload {
   username: string
   email: string
-  phone: string
-  national_code: string
+  phone_number: string
+  national_id: string
   first_name: string
   last_name: string
   password: string
 }
 
 /**
- * Login with identifier (username, email, phone, or national_code) and password.
+ * Login with identifier (username, email, phone_number, or national_id) and password.
  */
 export async function login(
   identifier: string,
