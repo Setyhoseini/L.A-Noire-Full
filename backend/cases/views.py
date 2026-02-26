@@ -18,3 +18,6 @@ class CrimeReportViewSet(viewsets.ModelViewSet):
     queryset = CrimeReport.objects.all()
     serializer_class = CrimeReportSerializer
     permission_classes = [IsAuthenticated, CanAccessCases]
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)
