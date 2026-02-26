@@ -19,11 +19,9 @@ class User(AbstractUser):
         ('clerk', 'Clerk'),
         ('prosecutor', 'Prosecutor'),
         ('judge', 'Judge'),
-    ]
-
-    # override email to be unique
+    ] 
+	    # override email to be unique
     email = models.EmailField(unique=True)
-
     phone_number = models.CharField(max_length=32, unique=True, null=True, blank=True)
     national_id = models.CharField(max_length=32, unique=True, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/%Y/%m/%d', null=True, blank=True)

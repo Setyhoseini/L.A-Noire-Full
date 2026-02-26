@@ -25,8 +25,16 @@ class Case(models.Model):
     closed_at = models.DateTimeField(null=True, blank=True)
     is_archived = models.BooleanField(default=False)
 
+
     class Meta:
         ordering = ['-opened_at']
+        permissions = [
+            ("assign_detective", "اختصاص کارآگاه به پرونده"),
+            ("verify_evidence", "تأیید شواهد پرونده"),
+            ("issue_warrant", "صدور حکم جلب برای مظنون"),
+            ("close_case", "بستن پرونده"),
+            # هر دسترسی دیگری که نیاز دارید
+        ]
 
     def __str__(self):
         return f"{self.case_number} - {self.title}"
@@ -49,7 +57,11 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.report_type})"
+from rest_framework.permissions import BasePermission
 
+class CanVerifyEvidence(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm('cases.can_verify_evidence')   
 
 class CrimeReport(models.Model):
     STATUS = [
