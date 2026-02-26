@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { BadgeCheck, ChevronsUpDown, LogOut, UserCog } from 'lucide-react'
+import { BadgeCheck, ChevronsUpDown, LogOut, RefreshCw, UserCog } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -24,6 +24,8 @@ type NavUserProps = {
     name: string
     email: string
     avatar: string
+    roles?: string[]
+    onRefreshProfile?: () => void
   }
 }
 
@@ -97,6 +99,12 @@ export function NavUser({ user }: NavUserProps) {
                     Account
                   </Link>
                 </DropdownMenuItem>
+                {user.onRefreshProfile && (
+                  <DropdownMenuItem onClick={user.onRefreshProfile}>
+                    <RefreshCw />
+                    Refresh profile
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem

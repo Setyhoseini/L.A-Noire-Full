@@ -18,13 +18,20 @@ class UserAdmin(BaseUserAdmin):
     ordering = ['username']
     filter_horizontal = ['roles', 'groups', 'user_permissions']
 
-    fieldsets = BaseUserAdmin.fieldsets + (
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login',)}),
         ('Police Info', {'fields': ('badge_number', 'role', 'rank', 'precinct', 'phone_number', 'national_id')}),
         ('Roles', {'fields': ('roles',)}),
     )
-    add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        (None, {'fields': ('email',)}),
+    add_fieldsets = (
+        (None, {'fields': ('username', 'password1', 'password2')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Police Info', {'fields': ('badge_number', 'role', 'rank', 'precinct', 'phone_number', 'national_id')}),
+        ('Roles', {'fields': ('roles',)}),
     )
 
 

@@ -9,14 +9,22 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer for user read operations (profile, etc.)."""
-    roles = serializers.StringRelatedField(many=True, read_only=True)
+    """Serializer for user read operations (profile, etc.).
+    Combines user.role (CharField) and user.roles (M2M) so both assignment methods work.
+    """
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'national_id',
                   'first_name', 'last_name', 'badge_number', 'rank', 'precinct', 'roles']
         read_only_fields = ['id']
+
+    def get_roles(self, obj):
+        names = list(obj.roles.values_list('name', flat=True))
+        if obj.role:
+            names.append(obj.role)
+        return names
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
@@ -29,13 +37,19 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration. Includes password. Returns full user with roles."""
     password = serializers.CharField(write_only=True, min_length=7)
-    roles = serializers.StringRelatedField(many=True, read_only=True)
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'national_id',
                   'first_name', 'last_name', 'password', 'roles']
         read_only_fields = ['id', 'roles']
+
+    def get_roles(self, obj):
+        names = list(obj.roles.values_list('name', flat=True))
+        if obj.role:
+            names.append(obj.role)
+        return names
 
     def create(self, validated_data):
         password = validated_data.pop('password')
