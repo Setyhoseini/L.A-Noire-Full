@@ -17,9 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from rest_framework.routers import DefaultRouter
+from cases.views import CaseViewSet
 
+
+router = DefaultRouter()
+router.register(r'cases', CaseViewSet)  # پیشوند آدرس: /api/cases/
 
 urlpatterns = [
+    path('api/', include(router.urls)),
+
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

@@ -12,14 +12,6 @@ class Role(models.Model):
 
 # Minimal custom user to satisfy AUTH_USER_MODEL in settings
 class User(AbstractUser):
-    ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('detective', 'Detective'),
-        ('officer', 'Officer'),
-        ('clerk', 'Clerk'),
-        ('prosecutor', 'Prosecutor'),
-        ('judge', 'Judge'),
-    ] 
 	    # override email to be unique
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=32, unique=True, null=True, blank=True)
@@ -27,7 +19,7 @@ class User(AbstractUser):
     profile_picture = models.ImageField(upload_to='profiles/%Y/%m/%d', null=True, blank=True)
 
     badge_number = models.CharField(max_length=64, blank=True)
-    role = models.CharField(max_length=32, choices=ROLE_CHOICES, blank=True)
+    role = models.CharField(max_length=32, blank=True)
     rank = models.CharField(max_length=64, blank=True)
     precinct = models.CharField(max_length=64, blank=True)
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
