@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'board',
     'rewards',
     'payments',
+    'trials',
 ]
 
 # Middleware – add CORS middleware at top

@@ -22,6 +22,12 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
+    path('api/cases/', include('cases.urls')),
+    path('api/evidence/', include('evidence.urls')),
+    path('api/board/', include('board.urls')),
+    path('api/trials/', include('trials.urls')),
+    path('api/rewards/', include('rewards.urls')),
+    path('api/payments/', include('payments.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),

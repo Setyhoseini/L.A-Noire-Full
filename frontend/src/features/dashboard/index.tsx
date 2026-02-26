@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import {
   Card,
   CardContent,
@@ -7,12 +8,19 @@ import {
 } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { Skeleton } from '@/components/ui/skeleton'
+import { getDashboardStats } from '@/api/dashboard'
 
 /**
  * Home page per PDF: intro + 3 stats.
  * Stats: solved cases, employees, active cases.
  */
 export function Dashboard() {
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: getDashboardStats,
+  })
+
   return (
     <>
       <Header />
@@ -37,7 +45,13 @@ export function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold'>—</div>
+                {isLoading ? (
+                  <Skeleton className='h-8 w-16' />
+                ) : error ? (
+                  <div className='text-2xl font-bold text-destructive'>—</div>
+                ) : (
+                  <div className='text-2xl font-bold'>{stats?.solved_cases ?? 0}</div>
+                )}
                 <CardDescription>Total resolved cases</CardDescription>
               </CardContent>
             </Card>
@@ -48,7 +62,13 @@ export function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold'>—</div>
+                {isLoading ? (
+                  <Skeleton className='h-8 w-16' />
+                ) : error ? (
+                  <div className='text-2xl font-bold text-destructive'>—</div>
+                ) : (
+                  <div className='text-2xl font-bold'>{stats?.employees ?? 0}</div>
+                )}
                 <CardDescription>Total organization staff</CardDescription>
               </CardContent>
             </Card>
@@ -59,7 +79,13 @@ export function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold'>—</div>
+                {isLoading ? (
+                  <Skeleton className='h-8 w-16' />
+                ) : error ? (
+                  <div className='text-2xl font-bold text-destructive'>—</div>
+                ) : (
+                  <div className='text-2xl font-bold'>{stats?.active_cases ?? 0}</div>
+                )}
                 <CardDescription>Cases under investigation</CardDescription>
               </CardContent>
             </Card>

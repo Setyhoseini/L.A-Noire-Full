@@ -143,21 +143,6 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.timestamp} - {self.actor_identifier} - {self.action}"
-
-class AuditLog(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    actor_identifier = models.CharField(max_length=128, blank=True)
-    action = models.CharField(max_length=128)
-    target_type = models.CharField(max_length=128, blank=True)
-    target_id = models.CharField(max_length=128, blank=True)
-    timestamp = models.DateTimeField(default=timezone.now)
-    details = models.JSONField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['-timestamp']
-
-    def __str__(self):
-        return f"{self.timestamp} - {self.actor_identifier} - {self.action}"
 class Interrogation(models.Model):
     OUTCOME_CHOICES = [
         ('admitted', 'Admitted'),

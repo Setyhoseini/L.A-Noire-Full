@@ -2,6 +2,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
 from .serializers import UserSerializer, RegisterSerializer
 from .models import Role
 from rest_framework import viewsets
@@ -47,3 +48,20 @@ class RegisterView(generics.CreateAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_stats(request):
+    """Dashboard stats per PDF: solved cases, employees, active cases."""
+    from cases.models import Case
+
+    solved = Case.objects.filter(status='closed').count()
+    employees = User.objects.filter(is_active=True).count()
+    active = Case.objects.filter(status__in=['new', 'open', 'investigation']).count()
+
+    return Response({
+        'solved_cases': solved,
+        'employees': employees,
+        'active_cases': active,
+    })
