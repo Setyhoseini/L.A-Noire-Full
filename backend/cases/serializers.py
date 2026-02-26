@@ -1,6 +1,17 @@
 import uuid
 from rest_framework import serializers
+from accounts.models import Person, Suspect
 from .models import Case, CrimeReport
+
+
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = [
+            'id', 'first_name', 'last_name', 'dob', 'aliases', 'contact_info',
+            'person_type', 'notes', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
 
 
 class CaseSerializer(serializers.ModelSerializer):
@@ -25,3 +36,16 @@ class CrimeReportSerializer(serializers.ModelSerializer):
             'status', 'created_at', 'case',
         ]
         read_only_fields = ['id', 'status', 'created_at', 'case']
+
+
+class SuspectSerializer(serializers.ModelSerializer):
+    person_name = serializers.CharField(source='person.full_name', read_only=True)
+    case_number = serializers.CharField(source='case.case_number', read_only=True)
+
+    class Meta:
+        model = Suspect
+        fields = [
+            'id', 'person', 'person_name', 'case', 'case_number', 'status',
+            'start_date', 'last_status_update', 'crime_degree', 'days_under_pursuit',
+        ]
+        read_only_fields = ['id', 'days_under_pursuit']

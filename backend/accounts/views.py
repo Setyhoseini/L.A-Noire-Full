@@ -1,9 +1,10 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework import generics, permissions
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import UserSerializer, RegisterSerializer
+from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer
 from .models import Role
 from rest_framework import viewsets
 from .serializers import RoleSerializer
@@ -13,12 +14,45 @@ from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
 
-class ProfileView(generics.RetrieveAPIView):
-    serializer_class = UserSerializer
+class ProfileView(generics.RetrieveUpdateAPIView):
+    """GET: full profile. PATCH: update profile (first_name, last_name, phone_number, badge_number, rank, precinct)."""
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return ProfileUpdateSerializer
+        return UserSerializer
+
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordView(APIView):
+    """POST: change password. Requires old_password and new_password."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        if not old_password or not new_password:
+            return Response(
+                {'detail': 'old_password and new_password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if len(new_password) < 7:
+            return Response(
+                {'detail': 'New password must be at least 7 characters'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user = request.user
+        if not user.check_password(old_password):
+            return Response(
+                {'detail': 'Current password is incorrect'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.set_password(new_password)
+        user.save()
+        return Response({'detail': 'Password updated successfully'}, status=status.HTTP_200_OK)
     
 User = get_user_model()
 

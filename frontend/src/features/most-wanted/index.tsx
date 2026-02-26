@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { ErrorWithRetry } from '@/components/error-with-retry'
 import { PageLayout } from '@/components/layout/page-layout'
 import {
   Table,
@@ -15,7 +16,13 @@ import { format } from 'date-fns'
 import { AlertTriangle } from 'lucide-react'
 
 export function MostWantedPage() {
-  const { data: items, isLoading, error } = useQuery({
+  const {
+    data: items,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ['most-wanted'],
     queryFn: getMostWanted,
   })
@@ -28,7 +35,11 @@ export function MostWantedPage() {
       {isLoading ? (
         <Skeleton className='h-[200px] w-full' />
       ) : error ? (
-        <p className='text-sm text-destructive'>Failed to load suspects.</p>
+        <ErrorWithRetry
+          message='Failed to load suspects.'
+          onRetry={() => refetch()}
+          isRetrying={isFetching}
+        />
       ) : !items?.length ? (
         <div className='flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center'>
           <AlertTriangle className='h-12 w-12 text-muted-foreground' />

@@ -14,6 +14,9 @@ export interface User {
   national_id: string | null
   first_name: string
   last_name: string
+  badge_number?: string
+  rank?: string
+  precinct?: string
   roles: string[]
 }
 
@@ -63,4 +66,35 @@ export async function register(payload: RegisterPayload): Promise<User> {
 export async function getProfile(): Promise<User> {
   const { data } = await apiClient.get<User>('/accounts/profile/')
   return data
+}
+
+/** Profile update payload - writable fields only */
+export interface ProfileUpdatePayload {
+  first_name?: string
+  last_name?: string
+  phone_number?: string
+  badge_number?: string
+  rank?: string
+  precinct?: string
+}
+
+/**
+ * Update current user profile.
+ */
+export async function updateProfile(payload: ProfileUpdatePayload): Promise<User> {
+  const { data } = await apiClient.patch<User>('/accounts/profile/', payload)
+  return data
+}
+
+/** Change password payload */
+export interface ChangePasswordPayload {
+  old_password: string
+  new_password: string
+}
+
+/**
+ * Change password. Requires current password.
+ */
+export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
+  await apiClient.post('/accounts/change-password/', payload)
 }

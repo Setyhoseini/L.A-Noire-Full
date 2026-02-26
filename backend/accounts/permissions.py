@@ -27,6 +27,14 @@ ROLES_SURVEILLANCE = ['detective', 'sergeant', 'captain', 'chief', 'police offic
 ROLES_GENERAL_REPORT = ['judge', 'captain', 'chief', 'prosecutor']
 ROLES_EVIDENCE = ['detective', 'police officer', 'patrol officer', 'coroner', 'sergeant', 'captain', 'officer', 'clerk']
 ROLES_ADMIN = ['administrator', 'admin']
+ROLES_APPROVE_CRIME_REPORTS = ['sergeant', 'captain', 'chief', 'detective']
+
+
+class CanApproveCrimeReports(BasePermission):
+    """Approve/return crime reports. Sergeant, Captain, Chief, Detective."""
+
+    def has_permission(self, request, view):
+        return _user_has_role(request.user, ROLES_APPROVE_CRIME_REPORTS)
 
 
 class IsRoleIn(BasePermission):

@@ -6,7 +6,7 @@ from .serializers import TrialSerializer
 from accounts.permissions import CanAccessGeneralReport
 
 
-class TrialViewSet(viewsets.ReadOnlyModelViewSet):
+class TrialViewSet(viewsets.ModelViewSet):
     """Trials API. Role-based: Judge, Captain, Chief, Prosecutor (General Report roles)."""
     queryset = Trial.objects.all()
     serializer_class = TrialSerializer

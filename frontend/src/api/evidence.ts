@@ -23,7 +23,7 @@ export interface CreateEvidencePayload {
   collected_at?: string
   storage_location?: string
   status?: string
-  case?: string
+  case?: string | null
   related_report?: string
 }
 
@@ -34,5 +34,15 @@ export async function getEvidence(): Promise<Evidence[]> {
 
 export async function createEvidence(payload: CreateEvidencePayload): Promise<Evidence> {
   const { data } = await apiClient.post<Evidence>('/evidence/', payload)
+  return data
+}
+
+export type UpdateEvidencePayload = Partial<CreateEvidencePayload>
+
+export async function updateEvidence(
+  id: string,
+  payload: UpdateEvidencePayload
+): Promise<Evidence> {
+  const { data } = await apiClient.patch<Evidence>(`/evidence/${id}/`, payload)
   return data
 }

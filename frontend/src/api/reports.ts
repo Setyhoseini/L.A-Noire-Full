@@ -27,6 +27,20 @@ export async function getTrials(): Promise<Trial[]> {
   return data
 }
 
+export interface CreateTrialPayload {
+  case: string
+  start_date?: string
+  end_date?: string
+  verdict?: string
+  court_room?: string
+  notes?: string
+}
+
+export async function createTrial(payload: CreateTrialPayload): Promise<Trial> {
+  const { data } = await apiClient.post<Trial>('/trials/', payload)
+  return data
+}
+
 export async function getGeneralReportStats(): Promise<GeneralReportStats> {
   const { data } = await apiClient.get<GeneralReportStats>('/accounts/dashboard/stats/')
   return data

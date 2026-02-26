@@ -14,5 +14,6 @@ COPY . .
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+# Use bash explicitly to avoid CRLF/shebang issues when volume-mounted on Windows
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

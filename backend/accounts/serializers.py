@@ -15,8 +15,15 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'national_id',
-                  'first_name', 'last_name', 'roles']
+                  'first_name', 'last_name', 'badge_number', 'rank', 'precinct', 'roles']
         read_only_fields = ['id']
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for profile update. Writable: first_name, last_name, phone_number, badge_number, rank, precinct."""
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone_number', 'badge_number', 'rank', 'precinct']
 
 
 class RegisterSerializer(serializers.ModelSerializer):

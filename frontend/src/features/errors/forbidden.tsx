@@ -14,10 +14,10 @@ export function ForbiddenError() {
           to view this resource.
         </p>
         <div className='mt-6 flex gap-4'>
+          <Button onClick={() => navigate({ to: '/' })}>Return to Dashboard</Button>
           <Button variant='outline' onClick={() => history.go(-1)}>
             Go Back
           </Button>
-          <Button onClick={() => navigate({ to: '/' })}>Back to Home</Button>
         </div>
       </div>
     </div>

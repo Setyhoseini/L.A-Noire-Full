@@ -74,3 +74,15 @@ export async function createCrimeReport(payload: CreateCrimeReportPayload): Prom
   const { data } = await apiClient.post<CrimeReport>('/cases/crime-reports/', payload)
   return data
 }
+
+export async function approveCrimeReport(id: string): Promise<CrimeReport> {
+  const { data } = await apiClient.post<CrimeReport>(`/cases/crime-reports/${id}/approve/`)
+  return data
+}
+
+export async function returnCrimeReport(id: string, reason: string): Promise<CrimeReport> {
+  const { data } = await apiClient.post<CrimeReport>(`/cases/crime-reports/${id}/return_report/`, {
+    reason,
+  })
+  return data
+}

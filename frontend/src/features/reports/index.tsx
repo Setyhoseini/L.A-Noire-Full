@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { ErrorWithRetry } from '@/components/error-with-retry'
 import { PageLayout } from '@/components/layout/page-layout'
 import {
   Card,
@@ -22,7 +24,13 @@ import { format } from 'date-fns'
 import { FileText } from 'lucide-react'
 
 export function ReportsPage() {
-  const { data: trials, isLoading: trialsLoading, error: trialsError } = useQuery({
+  const {
+    data: trials,
+    isLoading: trialsLoading,
+    error: trialsError,
+    refetch: refetchTrials,
+    isFetching: trialsFetching,
+  } = useQuery({
     queryKey: ['trials'],
     queryFn: getTrials,
   })
@@ -74,11 +82,21 @@ export function ReportsPage() {
         )}
 
         <div>
-          <h2 className='mb-4 text-lg font-semibold'>Trials</h2>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='text-lg font-semibold'>Trials</h2>
+            <Button size='sm' onClick={() => setTrialDialogOpen(true)}>
+              <Plus className='mr-2 h-4 w-4' />
+              Create Trial
+            </Button>
+          </div>
           {trialsLoading ? (
             <Skeleton className='h-[200px] w-full' />
           ) : trialsError ? (
-            <p className='text-sm text-destructive'>Failed to load trials.</p>
+            <ErrorWithRetry
+              message='Failed to load trials.'
+              onRetry={() => refetchTrials()}
+              isRetrying={trialsFetching}
+            />
           ) : !trials?.length ? (
             <p className='text-sm text-muted-foreground'>No trials recorded.</p>
           ) : (
@@ -115,6 +133,8 @@ export function ReportsPage() {
           )}
         </div>
       </div>
+
+      <TrialCreateDialog open={trialDialogOpen} onOpenChange={setTrialDialogOpen} />
     </PageLayout>
   )
 }

@@ -1,8 +1,8 @@
+import { useEffect } from 'react'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -29,34 +29,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createEvidence, type CreateEvidencePayload } from '@/api/evidence'
+import { updateEvidence, type Evidence } from '@/api/evidence'
 import { getCases } from '@/api/cases'
 import { handleServerError } from '@/lib/handle-server-error'
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  evidence_type: z.string().default('other'),
+  evidence_type: z.string(),
   collected_at: z.string().optional(),
   storage_location: z.string().optional(),
-  status: z.string().default('logged'),
+  status: z.string(),
   case: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-type EvidenceCreateDialogProps = {
+type EvidenceEditDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  evidence: Evidence | null
 }
 
-export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialogProps) {
+export function EvidenceEditDialog({ open, onOpenChange, evidence }: EvidenceEditDialogProps) {
   const queryClient = useQueryClient()
   const { data: cases } = useQuery({
     queryKey: ['cases'],
     queryFn: getCases,
     enabled: open,
   })
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,12 +72,36 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
     },
   })
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateEvidencePayload) => createEvidence(payload),
+  useEffect(() => {
+    if (evidence) {
+      const collectedAt = evidence.collected_at
+        ? new Date(evidence.collected_at).toISOString().slice(0, 16)
+        : ''
+      form.reset({
+        title: evidence.title,
+        description: evidence.description ?? '',
+        evidence_type: evidence.evidence_type,
+        collected_at: collectedAt,
+        storage_location: evidence.storage_location ?? '',
+        status: evidence.status,
+        case: evidence.case ?? '',
+      })
+    }
+  }, [evidence, form])
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: FormValues }) =>
+      updateEvidence(id, {
+        title: payload.title,
+        description: payload.description,
+        evidence_type: payload.evidence_type,
+        collected_at: payload.collected_at || undefined,
+        storage_location: payload.storage_location,
+        status: payload.status,
+        case: payload.case || null,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['evidence'] })
-      toast.success('Evidence registered successfully')
-      form.reset()
       onOpenChange(false)
     },
     onError: (err) => {
@@ -84,26 +110,15 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
   })
 
   const onSubmit = (values: FormValues) => {
-    const payload: CreateEvidencePayload = {
-      title: values.title,
-      description: values.description || undefined,
-      evidence_type: values.evidence_type,
-      storage_location: values.storage_location || undefined,
-      status: values.status,
-    }
-    if (values.collected_at) payload.collected_at = values.collected_at
-    if (values.case) payload.case = values.case
-    createMutation.mutate(payload)
+    if (evidence) updateMutation.mutate({ id: evidence.id, payload: values })
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Register Evidence</DialogTitle>
-          <DialogDescription>
-            Log new evidence. Link to a case or report later if needed.
-          </DialogDescription>
+          <DialogTitle>Edit Evidence</DialogTitle>
+          <DialogDescription>Update evidence details and link to a case.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -164,7 +179,7 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select type' />
@@ -216,7 +231,7 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select status' />
@@ -237,8 +252,8 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
               <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type='submit' disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Registering...' : 'Register'}
+              <Button type='submit' disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? 'Saving...' : 'Save'}
               </Button>
             </DialogFooter>
           </form>
