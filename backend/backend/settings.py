@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party apps
     'rest_framework',
+    'drf_spectacular',
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
@@ -77,6 +78,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
 }
 
 # JWT settings
@@ -150,6 +152,12 @@ USE_I18N = True
 
 USE_TZ = True
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API L.A-NOIRE', # عنوان پروژه خود را وارد کنید
+    'DESCRIPTION': '', # توضیحات کلی
+    'VERSION': '1.0.0', # نسخه API
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
