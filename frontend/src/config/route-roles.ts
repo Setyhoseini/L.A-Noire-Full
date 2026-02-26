@@ -23,9 +23,8 @@ const ROUTE_ROLES: Record<string, string[]> = {
     ROLES.CHIEF,
     ROLES.POLICE_OFFICER,
     ROLES.PATROL_OFFICER,
-    ROLES.OFFICER,
   ],
-  '/reports': [ROLES.JUDGE, ROLES.CAPTAIN, ROLES.CHIEF, ROLES.PROSECUTOR],
+  '/reports': [ROLES.JUDGE, ROLES.CAPTAIN, ROLES.CHIEF],
   '/evidence': [
     ROLES.DETECTIVE,
     ROLES.POLICE_OFFICER,
@@ -33,8 +32,6 @@ const ROUTE_ROLES: Record<string, string[]> = {
     ROLES.CORONER,
     ROLES.SERGEANT,
     ROLES.CAPTAIN,
-    ROLES.OFFICER,
-    ROLES.CLERK,
   ],
   '/cases': [
     ROLES.CADET,
@@ -45,16 +42,18 @@ const ROUTE_ROLES: Record<string, string[]> = {
     ROLES.CAPTAIN,
     ROLES.CHIEF,
     ROLES.COMPLAINANT,
-    ROLES.OFFICER,
-    ROLES.CLERK,
   ],
   '/admin': [ROLES.ADMINISTRATOR, ROLES.ADMIN],
 }
 
 export function getRequiredRolesForPath(pathname: string): string[] | null {
-  const exact = ROUTE_ROLES[pathname]
+  const normalized = pathname.replace(/\/$/, '') || '/'
+  const exact = ROUTE_ROLES[normalized]
   if (exact) return exact
   if (pathname.startsWith('/admin')) return ROUTE_ROLES['/admin'] ?? null
+  if (pathname.startsWith('/board')) return ROUTE_ROLES['/board'] ?? null
+  if (pathname.startsWith('/most-wanted')) return ROUTE_ROLES['/most-wanted'] ?? null
+  if (pathname.startsWith('/reports')) return ROUTE_ROLES['/reports'] ?? null
   if (pathname.startsWith('/cases')) return ROUTE_ROLES['/cases'] ?? null
   if (pathname.startsWith('/evidence')) return ROUTE_ROLES['/evidence'] ?? null
   if (pathname.startsWith('/settings')) return [] // all authenticated

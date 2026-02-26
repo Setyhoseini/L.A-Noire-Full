@@ -64,7 +64,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ['id', 'name'] 
+        fields = ['id', 'name', 'description', 'permissions'] 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'identifier'  # This will be the field name in request

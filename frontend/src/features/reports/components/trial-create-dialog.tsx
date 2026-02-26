@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -34,9 +35,9 @@ import { handleServerError } from '@/lib/handle-server-error'
 
 const formSchema = z.object({
   case: z.string().min(1, 'Case is required'),
+  verdict: z.string().default('other'),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
-  verdict: z.string().default('other'),
   court_room: z.string().optional(),
   notes: z.string().optional(),
 })
@@ -55,14 +56,15 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
     queryFn: getCases,
     enabled: open,
   })
+  const casesList = Array.isArray(cases) ? cases : []
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       case: '',
+      verdict: 'other',
       start_date: '',
       end_date: '',
-      verdict: 'other',
       court_room: '',
       notes: '',
     },
@@ -72,6 +74,7 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
     mutationFn: (payload: CreateTrialPayload) => createTrial(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trials'] })
+      toast.success('Trial created successfully')
       form.reset()
       onOpenChange(false)
     },
@@ -84,8 +87,8 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
     const payload: CreateTrialPayload = {
       case: values.case,
       verdict: values.verdict,
-      court_room: values.court_room,
-      notes: values.notes,
+      court_room: values.court_room || undefined,
+      notes: values.notes || undefined,
     }
     if (values.start_date) payload.start_date = values.start_date
     if (values.end_date) payload.end_date = values.end_date
@@ -98,7 +101,7 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
         <DialogHeader>
           <DialogTitle>Create Trial</DialogTitle>
           <DialogDescription>
-            Record a new trial for a case. Select the case and enter trial details.
+            Record a new trial for a case. Link to the case and set verdict.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -109,18 +112,41 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Case</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select case' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {cases?.map((c) => (
+                      {casesList.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.case_number} – {c.title}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='verdict'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Verdict</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select verdict' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='guilty'>Guilty</SelectItem>
+                      <SelectItem value='not_guilty'>Not Guilty</SelectItem>
+                      <SelectItem value='mistrial'>Mistrial</SelectItem>
+                      <SelectItem value='other'>Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -149,29 +175,6 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
                   <FormControl>
                     <Input type='date' {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='verdict'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Verdict</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select verdict' />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value='guilty'>Guilty</SelectItem>
-                      <SelectItem value='not_guilty'>Not Guilty</SelectItem>
-                      <SelectItem value='mistrial'>Mistrial</SelectItem>
-                      <SelectItem value='other'>Other</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -207,7 +210,7 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
                 Cancel
               </Button>
               <Button type='submit' disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Creating...' : 'Create Trial'}
+                {createMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

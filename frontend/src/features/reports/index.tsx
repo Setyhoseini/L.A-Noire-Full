@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ErrorWithRetry } from '@/components/error-with-retry'
 import { PageLayout } from '@/components/layout/page-layout'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -21,9 +22,11 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getTrials, getGeneralReportStats } from '@/api/reports'
 import { format } from 'date-fns'
-import { FileText } from 'lucide-react'
+import { FileText, Plus } from 'lucide-react'
+import { TrialCreateDialog } from './components/trial-create-dialog'
 
 export function ReportsPage() {
+  const [trialDialogOpen, setTrialDialogOpen] = useState(false)
   const {
     data: trials,
     isLoading: trialsLoading,
@@ -43,7 +46,7 @@ export function ReportsPage() {
   return (
     <PageLayout
       title='General Report'
-      description='Overview of trials and case statistics. For Judge, Captain, Chief, Prosecutor.'
+      description='Overview of trials and case statistics. For Judge, Captain, Chief.'
     >
       <div className='space-y-6'>
         {statsLoading ? (

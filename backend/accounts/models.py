@@ -5,19 +5,26 @@ class Role(models.Model):
     """Simple Role model to attach to users for RBAC."""
     name = models.CharField(max_length=64, unique=True)
     description = models.TextField(blank=True)
-    permissions = models.JSONField(null=True, blank=True)
+    permissions = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return self.name
 
 # Minimal custom user to satisfy AUTH_USER_MODEL in settings
+# All roles per PDF: Cases, Detective Board, Surveillance, General Report, Evidence, Admin
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
+        ('administrator', 'Administrator'),
+        ('cadet', 'Cadet'),
+        ('police officer', 'Police Officer'),
+        ('patrol officer', 'Patrol Officer'),
         ('detective', 'Detective'),
-        ('officer', 'Officer'),
-        ('clerk', 'Clerk'),
-        ('prosecutor', 'Prosecutor'),
+        ('sergeant', 'Sergeant'),
+        ('captain', 'Captain'),
+        ('chief', 'Chief'),
+        ('complainant', 'Complainant'),
+        ('coroner', 'Coroner'),
         ('judge', 'Judge'),
     ] 
 	    # override email to be unique
@@ -38,6 +45,26 @@ class User(AbstractUser):
         if self.role == role_name:
             return True
         return self.roles.filter(name=role_name).exists()
+
+    def has_role_permission(self, permission_code: str) -> bool:
+        """Check if user has a permission via any of their roles (Role.permissions JSON)."""
+        if not self.is_authenticated:
+            return False
+        # Check roles M2M
+        for r in getattr(self, 'roles', []).all():
+            perms = r.permissions or []
+            if permission_code in perms:
+                return True
+        # Map User.role (CharField) to Role and check its permissions
+        role_name = getattr(self, 'role', None)
+        if role_name:
+            try:
+                role = Role.objects.filter(name__iexact=role_name).first()
+                if role and role.permissions and permission_code in role.permissions:
+                    return True
+            except Exception:
+                pass
+        return False
 
     def __str__(self):
         return self.get_full_name() or self.username
