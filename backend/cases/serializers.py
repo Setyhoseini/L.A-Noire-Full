@@ -38,9 +38,20 @@ class CrimeReportSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'status', 'created_at', 'case']
 
 
+class DateOrDateTimeField(serializers.DateField):
+    """DateField that accepts datetime values (coerces to date for output)."""
+
+    def to_representation(self, value):
+        if value is not None and hasattr(value, 'date'):
+            value = value.date()
+        return super().to_representation(value)
+
+
 class SuspectSerializer(serializers.ModelSerializer):
     person_name = serializers.CharField(source='person.full_name', read_only=True)
     case_number = serializers.CharField(source='case.case_number', read_only=True)
+    start_date = DateOrDateTimeField(required=False)
+    last_status_update = DateOrDateTimeField(required=False, allow_null=True)
 
     class Meta:
         model = Suspect

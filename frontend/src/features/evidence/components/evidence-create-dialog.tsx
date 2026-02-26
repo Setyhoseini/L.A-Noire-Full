@@ -52,11 +52,13 @@ type EvidenceCreateDialogProps = {
 
 export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialogProps) {
   const queryClient = useQueryClient()
-  const { data: cases } = useQuery({
+  const { data: casesData } = useQuery({
     queryKey: ['cases'],
     queryFn: getCases,
     enabled: open,
   })
+  // Ensure cases is always an array (backend may return paginated or unexpected format)
+  const cases = Array.isArray(casesData) ? casesData : []
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,7 +68,7 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
       collected_at: '',
       storage_location: '',
       status: 'logged',
-      case: '',
+      case: '__none__',
     },
   })
 
@@ -92,7 +94,7 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
       status: values.status,
     }
     if (values.collected_at) payload.collected_at = values.collected_at
-    if (values.case) payload.case = values.case
+    if (values.case && values.case !== '__none__') payload.case = values.case
     createMutation.mutate(payload)
   }
 
@@ -139,15 +141,15 @@ export function EvidenceCreateDialog({ open, onOpenChange }: EvidenceCreateDialo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Case</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select onValueChange={field.onChange} value={field.value || '__none__'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select case (optional)' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value=''>None</SelectItem>
-                      {cases?.map((c) => (
+                      <SelectItem value='__none__'>None</SelectItem>
+                      {cases.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.case_number} – {c.title}
                         </SelectItem>

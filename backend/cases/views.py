@@ -15,6 +15,35 @@ class CaseViewSet(viewsets.ModelViewSet):
     serializer_class = CaseSerializer
     permission_classes = [IsAuthenticated, CanAccessCases]
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanAccessSurveillance])
+    def add_suspect(self, request, pk=None):
+        """Add a suspect to this case. POST with {person, status?, crime_degree?}."""
+        case = self.get_object()
+        person_id = request.data.get('person')
+        if not person_id:
+            return Response(
+                {'detail': 'person (Person UUID) is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            Person.objects.get(pk=person_id)
+        except Person.DoesNotExist:
+            return Response(
+                {'detail': 'Person not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        data = {
+            'person': person_id,
+            'case': str(case.id),
+            'status': request.data.get('status', 'UNDER_PURSUIT'),
+            'crime_degree': request.data.get('crime_degree'),
+        }
+        serializer = SuspectSerializer(data=data)
+        if serializer.is_valid():
+            suspect = serializer.save()
+            return Response(SuspectSerializer(suspect).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CrimeReportViewSet(viewsets.ModelViewSet):
     """Crime reports / complaints. Same role access as Cases."""

@@ -138,6 +138,11 @@ class UserRole(models.Model):
         verbose_name = "نقش کاربر"
         verbose_name_plural = "نقش‌های کاربران"
 
+def _today_date():
+    """Return today's date (timezone-aware). Use for DateField defaults."""
+    return timezone.now().date()
+
+
 class Suspect(models.Model):
 	STATUS_CHOICES = [
 		('UNDER_PURSUIT', 'Under Pursuit'),
@@ -150,7 +155,7 @@ class Suspect(models.Model):
 	person = models.ForeignKey('accounts.Person', on_delete=models.CASCADE, related_name='suspect_entries')
 	case = models.ForeignKey('cases.Case', on_delete=models.CASCADE, related_name='suspects')
 	status = models.CharField(max_length=32, choices=STATUS_CHOICES, default='UNDER_PURSUIT')
-	start_date = models.DateField(default=timezone.now)
+	start_date = models.DateField(default=_today_date)
 	last_status_update = models.DateField(null=True, blank=True)
 	crime_degree = models.IntegerField(null=True, blank=True)
 
