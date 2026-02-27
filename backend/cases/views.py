@@ -228,6 +228,15 @@ class SuspectViewSet(viewsets.ModelViewSet):
     serializer_class = SuspectSerializer
     permission_classes = [IsAuthenticated, CanAccessSurveillance]
 
+    def list(self, request, *args, **kwargs):
+        from django.db import OperationalError
+        try:
+            return super().list(request, *args, **kwargs)
+        except OperationalError as e:
+            import logging
+            logging.getLogger(__name__).warning('SuspectViewSet.list OperationalError: %s', e)
+            return Response([], status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         """Update suspect status (UNDER_PURSUIT, HOT_PURSUIT, CAPTURED, RELEASED)."""

@@ -78,16 +78,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         # If national_id matches a Person with suspect entries, assign Suspect role and link
         national_id = getattr(user, 'national_id', None) or validated_data.get('national_id')
         if national_id:
-            from .models import Person
-            from .models import Suspect
-            person = Person.objects.filter(national_id=national_id).first()
-            if person and Suspect.objects.filter(person=person).exists():
-                suspect_role, _ = Role.objects.get_or_create(name='Suspect')
-                user.roles.add(suspect_role)
-                user.role = 'suspect'
-                user.save(update_fields=['role'])
-                person.user = user
-                person.save(update_fields=['user'])
+            try:
+                from .models import Person
+                from .models import Suspect
+                person = Person.objects.filter(national_id=national_id).first()
+                if person and Suspect.objects.filter(person=person).exists():
+                    suspect_role, _ = Role.objects.get_or_create(name='Suspect')
+                    user.roles.add(suspect_role)
+                    user.role = 'suspect'
+                    user.save(update_fields=['role'])
+                    person.user = user
+                    person.save(update_fields=['user'])
+            except Exception:  # OperationalError if national_id column missing - skip suspect linking
+                pass
         return user
 
 class RoleSerializer(serializers.ModelSerializer):

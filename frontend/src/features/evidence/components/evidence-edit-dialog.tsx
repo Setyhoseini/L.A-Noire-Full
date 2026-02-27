@@ -154,14 +154,17 @@ export function EvidenceEditDialog({ open, onOpenChange, evidence }: EvidenceEdi
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Case</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select
+                    onValueChange={(v) => field.onChange(v === '__none__' ? undefined : v)}
+                    value={field.value || '__none__'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select case (optional)' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value=''>None</SelectItem>
+                      <SelectItem value='__none__'>None</SelectItem>
                       {cases?.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.case_number} – {c.title}

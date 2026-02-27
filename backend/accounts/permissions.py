@@ -2,6 +2,8 @@
 Permission-based access control. Admin can assign permissions to roles and users.
 Permission codes are stored in Role.permissions and User.extra_permissions.
 """
+from __future__ import annotations
+
 from rest_framework.permissions import BasePermission
 
 

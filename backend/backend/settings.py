@@ -114,11 +114,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+#
+# Default: db.sqlite3 in the backend directory (standard Django).
+# Override with DJANGO_DB_PATH only if you have permission issues (e.g. sudo chown).
+_db_path = os.environ.get('DJANGO_DB_PATH')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': Path(_db_path).expanduser() if _db_path else BASE_DIR / 'db.sqlite3',
     }
 }
 

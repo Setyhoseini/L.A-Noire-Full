@@ -169,14 +169,17 @@ export function TrialCreateDialog({ open, onOpenChange, preselectedCaseId }: Tri
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Suspect (person tried)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                  <Select
+                    onValueChange={(v) => field.onChange(v === '__none__' ? undefined : v)}
+                    value={field.value || '__none__'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder='Select suspect (optional)' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value=''>None</SelectItem>
+                      <SelectItem value='__none__'>None</SelectItem>
                       {caseSuspects.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.person_name} – {s.case_number}

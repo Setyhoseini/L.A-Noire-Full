@@ -169,12 +169,15 @@ export function TipsPage() {
           <form onSubmit={form.handleSubmit(submitTip)} className="max-w-md space-y-4">
             <div>
               <Label>Case (optional)</Label>
-              <Select onValueChange={form.setValue.bind(null, 'case')} value={form.watch('case')}>
+              <Select
+                onValueChange={(v) => form.setValue('case', v === '__none__' ? '' : v)}
+                value={form.watch('case') || '__none__'}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select case" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {cases?.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.case_number} – {c.title}
@@ -185,12 +188,15 @@ export function TipsPage() {
             </div>
             <div>
               <Label>Suspect (optional)</Label>
-              <Select onValueChange={form.setValue.bind(null, 'suspect')} value={form.watch('suspect')}>
+              <Select
+                onValueChange={(v) => form.setValue('suspect', v === '__none__' ? '' : v)}
+                value={form.watch('suspect') || '__none__'}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select suspect" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {caseSuspects.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.person_name} – {s.case_number}

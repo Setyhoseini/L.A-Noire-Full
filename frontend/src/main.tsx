@@ -59,9 +59,7 @@ const queryClient = new QueryClient({
         }
         if (error.response?.status === 500) {
           toast.error('Internal Server Error!')
-          if (import.meta.env.PROD) {
-            window.location.href = '/500'
-          }
+          // Don't redirect - let the page show ErrorWithRetry so user can retry
         }
       }
     },

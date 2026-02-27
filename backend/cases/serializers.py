@@ -8,8 +8,8 @@ class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
         fields = [
-            'id', 'first_name', 'last_name', 'dob', 'aliases', 'contact_info',
-            'person_type', 'notes', 'created_at',
+            'id', 'first_name', 'last_name', 'national_id', 'dob', 'aliases',
+            'contact_info', 'person_type', 'notes', 'created_at',
         ]
         read_only_fields = ['id', 'created_at']
 

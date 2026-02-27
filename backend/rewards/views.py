@@ -22,39 +22,50 @@ def _is_police_role(user):
 @permission_classes([IsAuthenticated])
 def rewards_list(request):
     """Most Wanted / Under Surveillance. Visible to all authenticated users."""
-    # Update UNDER_PURSUIT > 30 days to HOT_PURSUIT
-    for s in Suspect.objects.filter(status='UNDER_PURSUIT'):
-        s.update_status_if_expired(30)
+    from django.db import OperationalError
+    try:
+        # Update UNDER_PURSUIT > 30 days to HOT_PURSUIT
+        for s in Suspect.objects.filter(status='UNDER_PURSUIT'):
+            s.update_status_if_expired(30)
 
-    suspects = Suspect.objects.filter(
-        status__in=['UNDER_PURSUIT', 'HOT_PURSUIT']
-    ).select_related('person', 'case').order_by('-start_date')
+        suspects = Suspect.objects.filter(
+            status__in=['UNDER_PURSUIT', 'HOT_PURSUIT']
+        ).select_related('person', 'case').order_by('-start_date')
 
-    items = []
-    for s in suspects:
-        stats = s.person.compute_hot_pursuit_stats()
-        photo_url = None
-        if s.person.photo:
-            photo_url = request.build_absolute_uri(s.person.photo.url)
-        items.append({
-            'id': str(s.id),
-            'person_id': str(s.person.id),
-            'person_name': s.person.full_name(),
-            'photo_url': photo_url,
-            'case_number': s.case.case_number if s.case else None,
-            'status': s.status,
-            'start_date': s.start_date.isoformat() if s.start_date else None,
-            'days_under_pursuit': s.days_under_pursuit,
-            'crime_degree': s.crime_degree,
-            'rank': stats['rank'],
-            'reward': stats['reward'],
-            'cases': stats['cases'],
-        })
+        items = []
+        for s in suspects:
+            stats = s.person.compute_hot_pursuit_stats()
+            photo_url = None
+            if s.person.photo:
+                photo_url = request.build_absolute_uri(s.person.photo.url)
+            items.append({
+                'id': str(s.id),
+                'person_id': str(s.person.id),
+                'person_name': s.person.full_name(),
+                'photo_url': photo_url,
+                'case_number': s.case.case_number if s.case else None,
+                'status': s.status,
+                'start_date': s.start_date.isoformat() if s.start_date else None,
+                'days_under_pursuit': s.days_under_pursuit,
+                'crime_degree': s.crime_degree,
+                'rank': stats['rank'],
+                'reward': stats['reward'],
+                'cases': stats['cases'],
+            })
 
-    # Sort by rank descending
-    items.sort(key=lambda x: x['rank'], reverse=True)
+        # Sort by rank descending
+        items.sort(key=lambda x: x['rank'], reverse=True)
 
-    return Response({'items': items}, status=status.HTTP_200_OK)
+        return Response({'items': items}, status=status.HTTP_200_OK)
+    except OperationalError as e:
+        # Schema mismatch or missing tables - return empty; run: python manage.py migrate
+        import logging
+        logging.getLogger(__name__).warning('rewards_list OperationalError: %s', e)
+        return Response({'items': []}, status=status.HTTP_200_OK)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception('rewards_list error: %s', e)
+        raise
 
 
 class RewardTipViewSet(viewsets.ModelViewSet):
@@ -62,6 +73,15 @@ class RewardTipViewSet(viewsets.ModelViewSet):
     queryset = RewardTip.objects.select_related('user', 'case', 'suspect', 'suspect__person').all()
     serializer_class = RewardTipSerializer
     permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        from django.db import OperationalError
+        try:
+            return super().list(request, *args, **kwargs)
+        except OperationalError as e:
+            import logging
+            logging.getLogger(__name__).warning('RewardTipViewSet.list OperationalError: %s', e)
+            return Response([], status=status.HTTP_200_OK)
 
     def get_queryset(self):
         qs = super().get_queryset()

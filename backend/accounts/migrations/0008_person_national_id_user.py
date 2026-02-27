@@ -28,9 +28,5 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
-        migrations.AddField(
-            model_name='person',
-            name='photo',
-            field=models.ImageField(blank=True, null=True, upload_to='persons/%Y/%m/%d'),
-        ),
+        # photo already added by 0009_person_photo - do not add again
     ]
