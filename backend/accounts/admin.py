@@ -6,8 +6,14 @@ from .models import Role, User, UserRole, Person, CasePerson
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description']
+    list_display = ['name', 'description', 'permissions_preview']
     search_fields = ['name']
+    list_filter = ['name']
+
+    def permissions_preview(self, obj):
+        perms = obj.permissions or []
+        return ', '.join(perms[:5]) + ('...' if len(perms) > 5 else '') if perms else '-'
+    permissions_preview.short_description = 'Permissions'
 
 
 @admin.register(User)
@@ -24,14 +30,14 @@ class UserAdmin(BaseUserAdmin):
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
         ('Police Info', {'fields': ('badge_number', 'role', 'rank', 'precinct', 'phone_number', 'national_id')}),
-        ('Roles', {'fields': ('roles',)}),
+        ('Roles', {'fields': ('roles', 'extra_permissions')}),
     )
     add_fieldsets = (
         (None, {'fields': ('username', 'password1', 'password2')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Police Info', {'fields': ('badge_number', 'role', 'rank', 'precinct', 'phone_number', 'national_id')}),
-        ('Roles', {'fields': ('roles',)}),
+        ('Roles', {'fields': ('roles', 'extra_permissions')}),
     )
 
 

@@ -33,7 +33,8 @@ export function AppSidebar() {
     : { name: 'Loading...', email: '', avatar: '' }
 
   const roles = user?.roles ?? []
-  const navGroups = getNavGroupsForRoles(roles)
+  const permissions = user?.permissions ?? []
+  const navGroups = getNavGroupsForRoles(roles, permissions)
 
   return (
     <Sidebar collapsible={collapsible} variant={variant}>

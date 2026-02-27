@@ -38,6 +38,7 @@ class User(AbstractUser):
     rank = models.CharField(max_length=64, blank=True)
     precinct = models.CharField(max_length=64, blank=True)
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
+    extra_permissions = models.JSONField(default=list, blank=True)  # Permission codes granted directly to this user
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -47,9 +48,13 @@ class User(AbstractUser):
         return self.roles.filter(name=role_name).exists()
 
     def has_role_permission(self, permission_code: str) -> bool:
-        """Check if user has a permission via any of their roles (Role.permissions JSON)."""
+        """Check if user has a permission via roles (Role.permissions) or extra_permissions."""
         if not self.is_authenticated:
             return False
+        # User-specific extra permissions (admin can grant to any user)
+        extra = getattr(self, 'extra_permissions', None) or []
+        if permission_code in extra:
+            return True
         # Check roles M2M
         for r in getattr(self, 'roles', []).all():
             perms = r.permissions or []
@@ -65,6 +70,35 @@ class User(AbstractUser):
             except Exception:
                 pass
         return False
+
+    def get_all_permissions(self) -> list:
+        """Return all permission codes this user has (from roles + extra_permissions)."""
+        seen = set()
+        result = []
+        # Extra permissions first
+        for p in (getattr(self, 'extra_permissions', None) or []):
+            if p and p not in seen:
+                seen.add(p)
+                result.append(p)
+        # From roles
+        for r in getattr(self, 'roles', []).all():
+            for p in (r.permissions or []):
+                if p and p not in seen:
+                    seen.add(p)
+                    result.append(p)
+        # From User.role (CharField)
+        role_name = getattr(self, 'role', None)
+        if role_name:
+            try:
+                role = Role.objects.filter(name__iexact=role_name).first()
+                if role and role.permissions:
+                    for p in role.permissions:
+                        if p and p not in seen:
+                            seen.add(p)
+                            result.append(p)
+            except Exception:
+                pass
+        return result
 
     def __str__(self):
         return self.get_full_name() or self.username

@@ -13,11 +13,12 @@ class UserSerializer(serializers.ModelSerializer):
     Combines user.role (CharField) and user.roles (M2M) so both assignment methods work.
     """
     roles = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'national_id',
-                  'first_name', 'last_name', 'badge_number', 'rank', 'precinct', 'roles']
+                  'first_name', 'last_name', 'badge_number', 'rank', 'precinct', 'roles', 'permissions']
         read_only_fields = ['id']
 
     def get_roles(self, obj):
@@ -25,6 +26,21 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.role:
             names.append(obj.role)
         return names
+
+    def get_permissions(self, obj):
+        return getattr(obj, 'get_all_permissions', lambda: [])()
+
+
+class UserAdminSerializer(UserSerializer):
+    """Extended serializer for admin: includes role_ids and extra_permissions."""
+    role_ids = serializers.SerializerMethodField()
+    extra_permissions = serializers.ListField(child=serializers.CharField(), read_only=True)
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ['role_ids', 'extra_permissions']
+
+    def get_role_ids(self, obj):
+        return list(obj.roles.values_list('id', flat=True))
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):

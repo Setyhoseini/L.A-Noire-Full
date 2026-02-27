@@ -1,6 +1,6 @@
 /**
- * Role-based navigation config per PDF.
- * Each role sees only the modules they're allowed to access.
+ * Permission-based navigation config.
+ * Each user sees modules based on their permissions (from roles + extra_permissions).
  */
 import {
   LayoutDashboard,
@@ -8,7 +8,6 @@ import {
   UserCog,
   Wrench,
   ClipboardList,
-  Users,
   FileSearch,
   Shield,
   KanbanSquare,
@@ -18,9 +17,18 @@ import {
 } from 'lucide-react'
 import type { NavGroup } from '@/components/layout/types'
 
-/**
- * Role names. Backend may return PDF names or ROLE_CHOICES: admin, detective, officer, clerk, prosecutor, judge.
- */
+/** Permission codes from backend */
+export const PERMISSIONS = {
+  CASES_ACCESS: 'cases.access',
+  CASES_APPROVE: 'cases.approve_reports',
+  BOARD_ACCESS: 'board.access',
+  SURVEILLANCE_ACCESS: 'surveillance.access',
+  GENERAL_REPORT_ACCESS: 'general_report.access',
+  EVIDENCE_ACCESS: 'evidence.access',
+  ADMIN_ACCESS: 'admin.access',
+} as const
+
+/** Role names - kept for backward compatibility */
 export const ROLES = {
   ADMINISTRATOR: 'Administrator',
   ADMIN: 'admin',
@@ -45,74 +53,49 @@ type NavItemConfig = {
   url?: string
   icon?: LucideIcon
   items?: { title: string; url: string; icon?: LucideIcon }[]
-  /** Roles that can see this item. Empty = all authenticated. */
+  /** Permission codes required. Empty = all authenticated. */
+  permissions?: string[]
+  /** Fallback: roles (used when user has no permissions array from backend) */
   roles?: string[]
 }
 
 const NAV_ITEMS: NavItemConfig[] = [
-  {
-    title: 'Dashboard',
-    url: '/',
-    icon: LayoutDashboard,
-  },
+  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   {
     title: 'Cases & Complaints',
     url: '/cases',
     icon: ClipboardList,
-    roles: [
-      ROLES.CADET,
-      ROLES.POLICE_OFFICER,
-      ROLES.PATROL_OFFICER,
-      ROLES.DETECTIVE,
-      ROLES.SERGEANT,
-      ROLES.CAPTAIN,
-      ROLES.CHIEF,
-      ROLES.COMPLAINANT,
-    ],
+    permissions: [PERMISSIONS.CASES_ACCESS],
   },
   {
     title: 'Detective Board',
     url: '/board',
     icon: KanbanSquare,
-    roles: [ROLES.DETECTIVE],
+    permissions: [PERMISSIONS.BOARD_ACCESS],
   },
   {
     title: 'Under Surveillance',
     url: '/most-wanted',
     icon: Eye,
-    roles: [
-      ROLES.DETECTIVE,
-      ROLES.SERGEANT,
-      ROLES.CAPTAIN,
-      ROLES.CHIEF,
-      ROLES.POLICE_OFFICER,
-      ROLES.PATROL_OFFICER,
-    ],
+    permissions: [PERMISSIONS.SURVEILLANCE_ACCESS],
   },
   {
     title: 'General Report',
     url: '/reports',
     icon: FileText,
-    roles: [ROLES.JUDGE, ROLES.CAPTAIN, ROLES.CHIEF],
+    permissions: [PERMISSIONS.GENERAL_REPORT_ACCESS],
   },
   {
     title: 'Evidence',
     url: '/evidence',
     icon: FileSearch,
-    roles: [
-      ROLES.DETECTIVE,
-      ROLES.POLICE_OFFICER,
-      ROLES.PATROL_OFFICER,
-      ROLES.CORONER,
-      ROLES.SERGEANT,
-      ROLES.CAPTAIN,
-    ],
+    permissions: [PERMISSIONS.EVIDENCE_ACCESS],
   },
   {
     title: 'Admin Panel',
     url: '/admin',
     icon: Shield,
-    roles: [ROLES.ADMINISTRATOR, ROLES.ADMIN],
+    permissions: [PERMISSIONS.ADMIN_ACCESS],
   },
   {
     title: 'Settings',
@@ -124,26 +107,29 @@ const NAV_ITEMS: NavItemConfig[] = [
   },
 ]
 
-/**
- * Normalize role name for matching. Backend may return "admin", "Admin", "Base user", etc.
- */
 function normalizeRole(r: string): string {
   return r.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
 /**
- * Build nav groups for the given user roles.
- * Base user sees only Dashboard and Settings.
- * Handles backend role name variations (admin/Administrator, etc.).
+ * Build nav groups from user permissions (preferred) or roles (fallback).
  */
-export function getNavGroupsForRoles(userRoles: string[]): NavGroup[] {
-  const rolesSet = new Set(userRoles.map(normalizeRole))
+export function getNavGroupsForRoles(userRoles: string[], userPermissions?: string[]): NavGroup[] {
+  const permsSet = new Set((userPermissions ?? []).map((p) => p.trim()))
+  const hasPermission = (code: string) => permsSet.has(code)
+
+  const rolesSet = new Set((userRoles ?? []).map(normalizeRole))
   const hasRole = (name: string) => rolesSet.has(normalizeRole(name))
 
   const mainItems = NAV_ITEMS.filter((item) => {
     if (item.title === 'Dashboard' || item.title === 'Settings') return true
-    if (!item.roles || item.roles.length === 0) return true
-    return item.roles.some(hasRole)
+    if (item.permissions && item.permissions.length > 0) {
+      return item.permissions.some(hasPermission)
+    }
+    if (item.roles && item.roles.length > 0) {
+      return item.roles.some(hasRole)
+    }
+    return true
   })
 
   const navItems = mainItems.map((item) => {

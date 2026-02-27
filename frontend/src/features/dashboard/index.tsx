@@ -39,7 +39,8 @@ const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 export function Dashboard() {
   const user = useAuthStore((s) => s.user)
   const roles = user?.roles ?? []
-  const navGroups = getNavGroupsForRoles(roles)
+  const permissions = user?.permissions ?? []
+  const navGroups = getNavGroupsForRoles(roles, permissions)
   const moduleItems = navGroups.flatMap((g) => g.items).filter((i) => i.url && i.url !== '/')
 
   const { data: stats, isLoading, error } = useQuery({

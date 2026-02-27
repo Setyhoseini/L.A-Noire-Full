@@ -4,7 +4,7 @@ from rest_framework import generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer
+from .serializers import UserSerializer, UserAdminSerializer, RegisterSerializer, ProfileUpdateSerializer
 from .models import Role
 from rest_framework import viewsets
 from .serializers import RoleSerializer
@@ -13,6 +13,8 @@ from rest_framework.decorators import action
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAdminOrStaff
+from .permission_codes import get_permissions_for_api
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     """GET: full profile. PATCH: update profile (first_name, last_name, phone_number, badge_number, rank, precinct)."""
@@ -58,22 +60,28 @@ User = get_user_model()
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrStaff]
 
     @action(detail=True, methods=['post'])
     def assign_roles(self, request, pk=None):
         user = self.get_object()
         role_ids = request.data.get('role_ids', [])
+        extra_permissions = request.data.get('extra_permissions', None)
         roles = Role.objects.filter(id__in=role_ids)
         user.roles.set(roles)
-        user.save()
-        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        if extra_permissions is not None:
+            user.extra_permissions = list(extra_permissions) if isinstance(extra_permissions, (list, tuple)) else []
+            user.save(update_fields=['extra_permissions'])
+        else:
+            user.save()
+        return Response(UserAdminSerializer(user).data, status=status.HTTP_200_OK)
+
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
-    permission_classes = [permissions.IsAdminUser]  # only admin
+    permission_classes = [IsAuthenticated, IsAdminOrStaff]
 
 class RegisterView(generics.CreateAPIView):
     """User registration. Assigns 'Base user' role. Admin assigns other roles later."""
@@ -82,6 +90,13 @@ class RegisterView(generics.CreateAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_permissions(request):
+    """List all available permission codes. Used by admin UI for role/user permission assignment."""
+    return Response(get_permissions_for_api())
 
 
 @api_view(['GET'])

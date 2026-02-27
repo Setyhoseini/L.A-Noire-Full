@@ -30,14 +30,12 @@ import { useAuthStore } from '@/stores/auth-store'
 import { ErrorWithRetry } from '@/components/error-with-retry'
 import { format } from 'date-fns'
 
-function canApproveComplaints(roles: string[]): boolean {
-  const names = ['sergeant', 'captain', 'chief', 'detective']
-  return roles.some((r) => names.includes(r.trim().toLowerCase()))
+function canApproveComplaints(permissions: string[]): boolean {
+  return permissions.includes('cases.approve_reports')
 }
 
-function canAccessSurveillance(roles: string[]): boolean {
-  const names = ['detective', 'sergeant', 'captain', 'chief', 'police officer', 'patrol officer', 'officer']
-  return roles.some((r) => names.includes(r.trim().toLowerCase()))
+function canAccessSurveillance(permissions: string[]): boolean {
+  return permissions.includes('surveillance.access')
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -64,9 +62,9 @@ export function CasesPage() {
   const [statusSuspect, setStatusSuspect] = useState<Suspect | null>(null)
 
   const user = useAuthStore((s) => s.user)
-  const roles = user?.roles ?? []
-  const canApprove = canApproveComplaints(roles)
-  const canSeeSuspects = canAccessSurveillance(roles)
+  const permissions = user?.permissions ?? []
+  const canApprove = canApproveComplaints(permissions)
+  const canSeeSuspects = canAccessSurveillance(permissions)
 
   const {
     data: cases,

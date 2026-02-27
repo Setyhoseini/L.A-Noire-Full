@@ -5,6 +5,7 @@ from django.contrib import admin
 from .views import (
     CustomTokenObtainPairView, RegisterView, RoleViewSet,
     UserViewSet, ProfileView, ChangePasswordView, dashboard_stats,
+    list_permissions,
 )
 
 router = DefaultRouter()
@@ -17,5 +18,6 @@ urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
     path('dashboard/stats/', dashboard_stats, name='dashboard_stats'),
+    path('permissions/', list_permissions, name='list_permissions'),
     path('', include(router.urls)),
 ]

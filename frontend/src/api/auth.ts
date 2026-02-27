@@ -18,6 +18,7 @@ export interface User {
   rank?: string
   precinct?: string
   roles: string[]
+  permissions?: string[]
 }
 
 /** Login response from JWT endpoint */
