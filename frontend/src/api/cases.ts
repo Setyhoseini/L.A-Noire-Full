@@ -57,6 +57,50 @@ export async function getCase(id: string): Promise<Case> {
   return data
 }
 
+export interface CaseFullFile {
+  case: Case
+  crime_reports: Array<{
+    id: string
+    title: string
+    description: string
+    status: string
+    witnesses: unknown
+    occurred_at: string | null
+    location: string
+  }>
+  evidence: Array<{
+    id: string
+    title: string
+    evidence_type: string
+    status: string
+  }>
+  interrogations: Array<{
+    id: string
+    suspect_name: string | null
+    guilt_score_sergeant: number | null
+    guilt_score_detective: number | null
+    captain_verdict: string
+    chief_approved: boolean | null
+  }>
+  officers: Array<{
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+  }>
+  suspects: Array<{
+    id: string
+    person_name: string | null
+    status: string
+    crime_degree: number | null
+  }>
+}
+
+export async function getCaseFullFile(caseId: string): Promise<CaseFullFile> {
+  const { data } = await apiClient.get<CaseFullFile>(`/cases/${caseId}/full-file/`)
+  return data
+}
+
 export async function createCase(payload: CreateCasePayload): Promise<Case> {
   const { data } = await apiClient.post<Case>('/cases/', payload)
   return data

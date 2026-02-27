@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,11 +32,16 @@ import {
 } from '@/components/ui/select'
 import { createTrial, type CreateTrialPayload } from '@/api/reports'
 import { getCases } from '@/api/cases'
+import { getSuspects } from '@/api/suspects'
 import { handleServerError } from '@/lib/handle-server-error'
 
 const formSchema = z.object({
   case: z.string().min(1, 'Case is required'),
+  suspect: z.string().optional(),
   verdict: z.string().default('other'),
+  verdict_details: z.string().optional(),
+  punishment_title: z.string().optional(),
+  punishment_description: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   court_room: z.string().optional(),
@@ -47,28 +53,51 @@ type FormValues = z.infer<typeof formSchema>
 type TrialCreateDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  preselectedCaseId?: string
 }
 
-export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps) {
+export function TrialCreateDialog({ open, onOpenChange, preselectedCaseId }: TrialCreateDialogProps) {
   const queryClient = useQueryClient()
-  const { data: cases } = useQuery({
-    queryKey: ['cases'],
-    queryFn: getCases,
-    enabled: open,
-  })
-  const casesList = Array.isArray(cases) ? cases : []
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      case: '',
+      case: preselectedCaseId ?? '',
+      suspect: '',
       verdict: 'other',
+      verdict_details: '',
+      punishment_title: '',
+      punishment_description: '',
       start_date: '',
       end_date: '',
       court_room: '',
       notes: '',
     },
   })
+
+  const caseId = form.watch('case') || preselectedCaseId
+
+  useEffect(() => {
+    if (open && preselectedCaseId) {
+      form.setValue('case', preselectedCaseId)
+    }
+  }, [open, preselectedCaseId, form])
+
+  const { data: cases } = useQuery({
+    queryKey: ['cases'],
+    queryFn: getCases,
+    enabled: open,
+  })
+  const { data: suspects } = useQuery({
+    queryKey: ['suspects', caseId],
+    queryFn: getSuspects,
+    enabled: open && !!caseId,
+  })
+
+  const casesList = Array.isArray(cases) ? cases : []
+  const caseSuspects = caseId
+    ? (suspects ?? []).filter((s) => s.case === caseId)
+    : suspects ?? []
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateTrialPayload) => createTrial(payload),
@@ -90,6 +119,10 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
       court_room: values.court_room || undefined,
       notes: values.notes || undefined,
     }
+    if (values.suspect) payload.suspect = values.suspect
+    if (values.verdict_details) payload.verdict_details = values.verdict_details
+    if (values.punishment_title) payload.punishment_title = values.punishment_title
+    if (values.punishment_description) payload.punishment_description = values.punishment_description
     if (values.start_date) payload.start_date = values.start_date
     if (values.end_date) payload.end_date = values.end_date
     createMutation.mutate(payload)
@@ -132,6 +165,31 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
             />
             <FormField
               control={form.control}
+              name='suspect'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Suspect (person tried)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || undefined}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select suspect (optional)' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value=''>None</SelectItem>
+                      {caseSuspects.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.person_name} – {s.case_number}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name='verdict'
               render={({ field }) => (
                 <FormItem>
@@ -149,6 +207,45 @@ export function TrialCreateDialog({ open, onOpenChange }: TrialCreateDialogProps
                       <SelectItem value='other'>Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='verdict_details'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Verdict Details (Judge notes)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder='Judge notes' className='min-h-[60px]' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='punishment_title'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Punishment Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder='e.g. 5 years imprisonment' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='punishment_description'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Punishment Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder='Punishment details' className='min-h-[60px]' {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

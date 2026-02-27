@@ -22,12 +22,15 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedTipsIndexRouteImport } from './routes/_authenticated/tips/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedMostWantedIndexRouteImport } from './routes/_authenticated/most-wanted/index'
+import { Route as AuthenticatedInterrogationsIndexRouteImport } from './routes/_authenticated/interrogations/index'
 import { Route as AuthenticatedEvidenceIndexRouteImport } from './routes/_authenticated/evidence/index'
 import { Route as AuthenticatedCasesIndexRouteImport } from './routes/_authenticated/cases/index'
 import { Route as AuthenticatedBoardIndexRouteImport } from './routes/_authenticated/board/index'
+import { Route as AuthenticatedBailIndexRouteImport } from './routes/_authenticated/bail/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
@@ -101,6 +104,11 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTipsIndexRoute = AuthenticatedTipsIndexRouteImport.update({
+  id: '/tips/',
+  path: '/tips/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
@@ -119,6 +127,12 @@ const AuthenticatedMostWantedIndexRoute =
     path: '/most-wanted/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInterrogationsIndexRoute =
+  AuthenticatedInterrogationsIndexRouteImport.update({
+    id: '/interrogations/',
+    path: '/interrogations/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEvidenceIndexRoute =
   AuthenticatedEvidenceIndexRouteImport.update({
     id: '/evidence/',
@@ -133,6 +147,11 @@ const AuthenticatedCasesIndexRoute = AuthenticatedCasesIndexRouteImport.update({
 const AuthenticatedBoardIndexRoute = AuthenticatedBoardIndexRouteImport.update({
   id: '/board/',
   path: '/board/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBailIndexRoute = AuthenticatedBailIndexRouteImport.update({
+  id: '/bail/',
+  path: '/bail/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -190,12 +209,15 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/bail': typeof AuthenticatedBailIndexRoute
   '/board': typeof AuthenticatedBoardIndexRoute
   '/cases': typeof AuthenticatedCasesIndexRoute
   '/evidence': typeof AuthenticatedEvidenceIndexRoute
+  '/interrogations': typeof AuthenticatedInterrogationsIndexRoute
   '/most-wanted': typeof AuthenticatedMostWantedIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/tips': typeof AuthenticatedTipsIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -215,12 +237,15 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/bail': typeof AuthenticatedBailIndexRoute
   '/board': typeof AuthenticatedBoardIndexRoute
   '/cases': typeof AuthenticatedCasesIndexRoute
   '/evidence': typeof AuthenticatedEvidenceIndexRoute
+  '/interrogations': typeof AuthenticatedInterrogationsIndexRoute
   '/most-wanted': typeof AuthenticatedMostWantedIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/tips': typeof AuthenticatedTipsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,12 +268,15 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/bail/': typeof AuthenticatedBailIndexRoute
   '/_authenticated/board/': typeof AuthenticatedBoardIndexRoute
   '/_authenticated/cases/': typeof AuthenticatedCasesIndexRoute
   '/_authenticated/evidence/': typeof AuthenticatedEvidenceIndexRoute
+  '/_authenticated/interrogations/': typeof AuthenticatedInterrogationsIndexRoute
   '/_authenticated/most-wanted/': typeof AuthenticatedMostWantedIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/tips/': typeof AuthenticatedTipsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,12 +299,15 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/admin'
+    | '/bail'
     | '/board'
     | '/cases'
     | '/evidence'
+    | '/interrogations'
     | '/most-wanted'
     | '/reports'
     | '/settings/'
+    | '/tips'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -296,12 +327,15 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/admin'
+    | '/bail'
     | '/board'
     | '/cases'
     | '/evidence'
+    | '/interrogations'
     | '/most-wanted'
     | '/reports'
     | '/settings'
+    | '/tips'
   id:
     | '__root__'
     | '/_authenticated'
@@ -323,12 +357,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/admin/'
+    | '/_authenticated/bail/'
     | '/_authenticated/board/'
     | '/_authenticated/cases/'
     | '/_authenticated/evidence/'
+    | '/_authenticated/interrogations/'
     | '/_authenticated/most-wanted/'
     | '/_authenticated/reports/'
     | '/_authenticated/settings/'
+    | '/_authenticated/tips/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -437,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tips/': {
+      id: '/_authenticated/tips/'
+      path: '/tips'
+      fullPath: '/tips'
+      preLoaderRoute: typeof AuthenticatedTipsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
@@ -458,6 +502,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMostWantedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/interrogations/': {
+      id: '/_authenticated/interrogations/'
+      path: '/interrogations'
+      fullPath: '/interrogations'
+      preLoaderRoute: typeof AuthenticatedInterrogationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/evidence/': {
       id: '/_authenticated/evidence/'
       path: '/evidence'
@@ -477,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/board'
       fullPath: '/board'
       preLoaderRoute: typeof AuthenticatedBoardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bail/': {
+      id: '/_authenticated/bail/'
+      path: '/bail'
+      fullPath: '/bail'
+      preLoaderRoute: typeof AuthenticatedBailIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/': {
@@ -553,11 +611,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedBailIndexRoute: typeof AuthenticatedBailIndexRoute
   AuthenticatedBoardIndexRoute: typeof AuthenticatedBoardIndexRoute
   AuthenticatedCasesIndexRoute: typeof AuthenticatedCasesIndexRoute
   AuthenticatedEvidenceIndexRoute: typeof AuthenticatedEvidenceIndexRoute
+  AuthenticatedInterrogationsIndexRoute: typeof AuthenticatedInterrogationsIndexRoute
   AuthenticatedMostWantedIndexRoute: typeof AuthenticatedMostWantedIndexRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
+  AuthenticatedTipsIndexRoute: typeof AuthenticatedTipsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -566,11 +627,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedBailIndexRoute: AuthenticatedBailIndexRoute,
   AuthenticatedBoardIndexRoute: AuthenticatedBoardIndexRoute,
   AuthenticatedCasesIndexRoute: AuthenticatedCasesIndexRoute,
   AuthenticatedEvidenceIndexRoute: AuthenticatedEvidenceIndexRoute,
+  AuthenticatedInterrogationsIndexRoute: AuthenticatedInterrogationsIndexRoute,
   AuthenticatedMostWantedIndexRoute: AuthenticatedMostWantedIndexRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
+  AuthenticatedTipsIndexRoute: AuthenticatedTipsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

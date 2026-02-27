@@ -102,15 +102,34 @@ def list_permissions(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
-    """Dashboard stats per PDF: solved cases, employees, active cases."""
+    """Dashboard stats per PDF: solved cases, employees, active cases. Suspects get their payments."""
     from cases.models import Case
+    from accounts.permissions import _user_has_role
 
-    solved = Case.objects.filter(status='closed').count()
-    employees = User.objects.filter(is_active=True).count()
-    active = Case.objects.filter(status__in=['new', 'open', 'investigation']).count()
-
-    return Response({
-        'solved_cases': solved,
-        'employees': employees,
-        'active_cases': active,
-    })
+    data = {
+        'solved_cases': Case.objects.filter(status='closed').count(),
+        'employees': User.objects.filter(is_active=True).count(),
+        'active_cases': Case.objects.filter(status__in=['new', 'open', 'investigation']).count(),
+    }
+    if _user_has_role(request.user, ['suspect']):
+        from accounts.models import Person, Suspect
+        from payments.models import BailPayment
+        person = Person.objects.filter(user=request.user).first()
+        if person:
+            suspect_ids = list(Suspect.objects.filter(person=person).values_list('id', flat=True))
+            payments = BailPayment.objects.filter(
+                suspect_id__in=suspect_ids
+            ).exclude(status__in=['paid', 'rejected']).select_related('suspect', 'suspect__case')
+            data['pending_payments'] = [
+                {
+                    'id': str(p.id),
+                    'amount': str(p.amount),
+                    'payment_type': p.payment_type,
+                    'status': p.status,
+                    'case_number': p.suspect.case.case_number if p.suspect and p.suspect.case else None,
+                }
+                for p in payments
+            ]
+        else:
+            data['pending_payments'] = []
+    return Response(data)

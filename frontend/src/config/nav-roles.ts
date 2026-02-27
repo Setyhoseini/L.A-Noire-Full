@@ -26,6 +26,9 @@ export const PERMISSIONS = {
   GENERAL_REPORT_ACCESS: 'general_report.access',
   EVIDENCE_ACCESS: 'evidence.access',
   ADMIN_ACCESS: 'admin.access',
+  INTERROGATION_ACCESS: 'interrogation.access',
+  INTERROGATION_CAPTAIN_VERDICT: 'interrogation.captain_verdict',
+  INTERROGATION_CHIEF_APPROVE: 'interrogation.chief_approve',
 } as const
 
 /** Role names - kept for backward compatibility */
@@ -68,10 +71,30 @@ const NAV_ITEMS: NavItemConfig[] = [
     roles: [ROLES.BASE_USER],
   },
   {
+    title: 'Submit Tip',
+    url: '/tips',
+    icon: ClipboardList,
+    permissions: [],
+    roles: [], // All authenticated
+  },
+  {
     title: 'Cases & Complaints',
     url: '/cases',
     icon: ClipboardList,
     permissions: [PERMISSIONS.CASES_ACCESS],
+  },
+  {
+    title: 'Interrogations',
+    url: '/interrogations',
+    icon: FileText,
+    permissions: [PERMISSIONS.INTERROGATION_ACCESS],
+    roles: [ROLES.SERGEANT, ROLES.DETECTIVE, ROLES.CAPTAIN, ROLES.CHIEF],
+  },
+  {
+    title: 'Bail & Fines',
+    url: '/bail',
+    icon: FileText,
+    roles: [ROLES.SERGEANT, ROLES.SUSPECT],
   },
   {
     title: 'Detective Board',
@@ -80,10 +103,11 @@ const NAV_ITEMS: NavItemConfig[] = [
     permissions: [PERMISSIONS.BOARD_ACCESS],
   },
   {
-    title: 'Under Surveillance',
+    title: 'Most Wanted',
     url: '/most-wanted',
     icon: Eye,
-    permissions: [PERMISSIONS.SURVEILLANCE_ACCESS],
+    permissions: [], // All authenticated users
+    roles: [], // Empty = show for everyone logged in
   },
   {
     title: 'General Report',

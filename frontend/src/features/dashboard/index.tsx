@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { getInterrogations } from '@/api/interrogations'
 import {
   Card,
   CardContent,
@@ -21,6 +22,7 @@ import {
   FileText,
   Shield,
   ChevronRight,
+  Gavel,
 } from 'lucide-react'
 
 const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -31,23 +33,44 @@ const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   'General Report': FileText,
   Evidence: FileSearch,
   'Admin Panel': Shield,
+  Interrogations: Gavel,
 }
 
 /**
  * Home page per PDF: intro + 3 stats + role-based quick links to modules.
  * Stats: solved cases, employees, active cases.
  */
+function hasRole(roles: string[], role: string): boolean {
+  return roles.some((r) => r.toLowerCase().trim() === role.toLowerCase())
+}
+
 export function Dashboard() {
   const user = useAuthStore((s) => s.user)
   const roles = user?.roles ?? []
   const permissions = user?.permissions ?? []
   const navGroups = getNavGroupsForRoles(roles, permissions)
   const moduleItems = navGroups.flatMap((g) => g.items).filter((i) => i.url && i.url !== '/')
+  const hasInterrogationsAccess = moduleItems.some((i) => i.url === '/interrogations')
+  const canSubmitCaptainVerdict =
+    hasRole(roles, 'Captain') || permissions.includes('interrogation.captain_verdict')
 
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: getDashboardStats,
   })
+
+  const { data: interrogations } = useQuery({
+    queryKey: ['interrogations', 'pending'],
+    queryFn: () => getInterrogations({ verdict: 'pending' }),
+    enabled: hasInterrogationsAccess,
+  })
+
+  const pendingVerdicts =
+    interrogations?.filter(
+      (i) =>
+        i.captain_verdict === 'pending' &&
+        (i.guilt_score_sergeant != null || i.guilt_score_detective != null)
+    ) ?? []
 
   return (
     <>
@@ -64,6 +87,37 @@ export function Dashboard() {
               to trial.
             </p>
           </div>
+
+          {hasInterrogationsAccess && canSubmitCaptainVerdict && (
+            <div>
+              <h2 className='mb-4 text-lg font-semibold'>Interrogations</h2>
+              <Link to='/interrogations'>
+                <Card className='transition-colors hover:bg-muted/50'>
+                  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                    <CardTitle className='flex items-center gap-2 text-base'>
+                      <Gavel className='h-4 w-4' />
+                      Rate Suspect Guilt
+                    </CardTitle>
+                    <ChevronRight className='h-4 w-4 text-muted-foreground' />
+                  </CardHeader>
+                  <CardContent>
+                    <div className='text-2xl font-bold'>
+                      {interrogations === undefined ? '—' : pendingVerdicts.length}
+                    </div>
+                    <CardDescription>
+                      {interrogations === undefined
+                        ? 'Manage interrogations and rate suspect guilt (Guilty / Suspected / Cleared)'
+                        : pendingVerdicts.length === 0
+                          ? 'No interrogations awaiting your verdict. View all interrogations.'
+                          : pendingVerdicts.length === 1
+                            ? '1 interrogation awaiting your verdict'
+                            : `${pendingVerdicts.length} interrogations awaiting your verdict`}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          )}
 
           {moduleItems.length > 0 && (
             <div>
@@ -87,6 +141,7 @@ export function Dashboard() {
                             {item.title === 'Cases & Complaints' && 'View and manage cases, complaints, suspects.'}
                             {item.title === 'Detective Board' && 'Link evidence and documents to solve cases.'}
                             {item.title === 'Under Surveillance' && 'Track suspects under pursuit.'}
+                            {item.title === 'Interrogations' && 'Manage interrogations and rate suspect guilt (Captain verdict).'}
                             {item.title === 'General Report' && 'Trials and case statistics.'}
                             {item.title === 'Evidence' && 'Register and review evidence.'}
                             {item.title === 'Admin Panel' && 'System administration.'}

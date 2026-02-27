@@ -24,7 +24,23 @@ class Case(models.Model):
     opened_at = models.DateTimeField(default=timezone.now)
     closed_at = models.DateTimeField(null=True, blank=True)
     is_archived = models.BooleanField(default=False)
-
+    crime_level = models.CharField(
+        max_length=16,
+        choices=[
+            ('1', 'Level 1'),
+            ('2', 'Level 2'),
+            ('3', 'Level 3'),
+            ('critical', 'Critical'),
+        ],
+        default='2',
+    )
+    assigned_detective = models.ForeignKey(
+        'accounts.User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='assigned_cases',
+    )
 
     class Meta:
         ordering = ['-opened_at']
@@ -155,10 +171,28 @@ class Interrogation(models.Model):
         ('inconclusive', 'Inconclusive'),
         ('other', 'Other'),
     ]
+    CAPTAIN_VERDICT_CHOICES = [
+        ('pending', 'Pending'),
+        ('guilty', 'Guilty'),
+        ('suspected', 'Suspected'),
+        ('cleared', 'Cleared'),
+    ]
+    INTERROGATION_STATUS_CHOICES = [
+        ('pending_verification', 'Pending Captain Verify'),
+        ('pending_chief', 'Pending Chief (Critical)'),
+        ('verified', 'Verified'),
+        ('cancelled', 'Cancelled'),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     case = models.ForeignKey('Case', null=True, blank=True, on_delete=models.SET_NULL, related_name='interrogations')
-    suspect = models.ForeignKey('accounts.Person', null=True, blank=True, on_delete=models.SET_NULL, related_name='interrogations')
+    suspect = models.ForeignKey(
+        'cases.Suspect',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='interrogations',
+    )
     start_time = models.DateField(null=True, blank=True)
     end_time = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=255, blank=True)
@@ -166,8 +200,50 @@ class Interrogation(models.Model):
     outcome = models.CharField(max_length=32, choices=OUTCOME_CHOICES, default='other')
     notes = models.TextField(blank=True)
     attendees = models.ManyToManyField('accounts.Person', related_name='attended_interrogations', blank=True)
+    guilt_score_sergeant = models.IntegerField(null=True, blank=True)
+    guilt_score_detective = models.IntegerField(null=True, blank=True)
+    sergeant = models.ForeignKey(
+        'accounts.User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='sergeant_interrogations',
+    )
+    detective = models.ForeignKey(
+        'accounts.User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='detective_interrogations',
+    )
+    captain_verdict = models.CharField(
+        max_length=32,
+        choices=CAPTAIN_VERDICT_CHOICES,
+        default='pending',
+    )
+    captain = models.ForeignKey(
+        'accounts.User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='captain_interrogations',
+    )
+    chief_approved = models.BooleanField(null=True, blank=True)
+    chief = models.ForeignKey(
+        'accounts.User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='chief_interrogations',
+    )
+    interrogation_status = models.CharField(
+        max_length=32,
+        choices=INTERROGATION_STATUS_CHOICES,
+        default='pending_verification',
+    )
 
     def __str__(self):
-        return f"Interrogation for {self.suspect} on {self.start_time}"
+        suspect_str = str(self.suspect) if self.suspect else 'Unknown'
+        return f"Interrogation for {suspect_str} on {self.start_time}"
 
 

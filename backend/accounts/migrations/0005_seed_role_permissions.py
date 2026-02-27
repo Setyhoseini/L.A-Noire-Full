@@ -30,12 +30,15 @@ ROLE_PERMISSIONS = {
         'evidence.access',
         'general_report.access',
         'cases.approve_reports',
+        'interrogation.access',
+        'interrogation.captain_verdict',
     ],
     'Chief': [
         'cases.access',
         'surveillance.access',
         'general_report.access',
         'cases.approve_reports',
+        'interrogation.chief_approve',
     ],  # Evidence: Detective, Police Officer, Patrol Officer, Coroner, Sergeant, Captain only (Chief not in PDF)
     'Complainant': ['cases.access'],
     'Coroner': ['evidence.access'],

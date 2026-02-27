@@ -13,6 +13,13 @@ PERMISSION_CODES = {
     'general_report.access': (_('General Report'), _('Access trials and general reports')),
     'evidence.access': (_('Evidence'), _('View and manage evidence')),
     'admin.access': (_('Admin Panel'), _('Access admin panel')),
+    'interrogation.access': (_('Interrogation Access'), _('Submit guilt scores as Sergeant/Detective')),
+    'interrogation.captain_verdict': (_('Captain Verdict'), _('Give captain verdict on interrogations')),
+    'interrogation.chief_approve': (_('Chief Approval'), _('Approve or reject captain verdict for critical cases')),
+    'tips.submit': (_('Submit Tip'), _('Submit reward tips')),
+    'tips.review': (_('Tip Review'), _('Officer initial review of tips')),
+    'tips.confirm': (_('Tip Confirm'), _('Detective confirm and generate code')),
+    'tips.lookup': (_('Reward Lookup'), _('Lookup reward by national ID + code')),
 }
 
 

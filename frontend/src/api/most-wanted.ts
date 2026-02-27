@@ -8,6 +8,7 @@ export interface MostWantedItem {
   id: string
   person_id: string
   person_name: string
+  photo_url?: string | null
   case_number: string | null
   status: string
   start_date: string | null

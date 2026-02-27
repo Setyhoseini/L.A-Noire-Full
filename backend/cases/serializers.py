@@ -1,7 +1,7 @@
 import uuid
 from rest_framework import serializers
 from accounts.models import Person, Suspect
-from .models import Case, CrimeReport
+from .models import Case, CrimeReport, Interrogation
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -20,6 +20,7 @@ class CaseSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'case_number', 'title', 'description', 'status', 'priority',
             'precinct', 'opened_at', 'closed_at', 'is_archived',
+            'crime_level', 'assigned_detective',
         ]
         read_only_fields = ['id', 'case_number', 'opened_at', 'closed_at']
 
@@ -55,7 +56,10 @@ class DateOrDateTimeField(serializers.DateField):
 
 
 class SuspectSerializer(serializers.ModelSerializer):
-    person_name = serializers.CharField(source='person.full_name', read_only=True)
+    person_name = serializers.SerializerMethodField()
+
+    def get_person_name(self, obj):
+        return obj.person.full_name() if obj.person else None
     case_number = serializers.CharField(source='case.case_number', read_only=True)
     start_date = DateOrDateTimeField(required=False)
     last_status_update = DateOrDateTimeField(required=False, allow_null=True)
@@ -67,3 +71,36 @@ class SuspectSerializer(serializers.ModelSerializer):
             'start_date', 'last_status_update', 'crime_degree', 'days_under_pursuit',
         ]
         read_only_fields = ['id', 'days_under_pursuit']
+
+
+class InterrogationSerializer(serializers.ModelSerializer):
+    suspect_name = serializers.SerializerMethodField()
+    case_number = serializers.CharField(source='case.case_number', read_only=True)
+    crime_level = serializers.CharField(source='case.crime_level', read_only=True)
+
+    class Meta:
+        model = Interrogation
+        fields = [
+            'id', 'case', 'case_number', 'suspect', 'suspect_name', 'crime_level',
+            'start_time', 'end_time', 'location', 'transcript', 'outcome', 'notes',
+            'guilt_score_sergeant', 'guilt_score_detective', 'sergeant', 'detective',
+            'captain_verdict', 'captain', 'chief_approved', 'chief',
+            'interrogation_status',
+        ]
+        read_only_fields = ['id']
+
+    def get_suspect_name(self, obj):
+        if obj.suspect and obj.suspect.person:
+            return obj.suspect.person.full_name()
+        return None
+
+    def validate_guilt_score(self, value):
+        if value is not None and (value < 1 or value > 10):
+            raise serializers.ValidationError('Guilt score must be between 1 and 10.')
+        return value
+
+    def validate_guilt_score_sergeant(self, value):
+        return self.validate_guilt_score(value)
+
+    def validate_guilt_score_detective(self, value):
+        return self.validate_guilt_score(value)

@@ -8,9 +8,15 @@ export interface Trial {
   id: string
   case: string
   case_number: string | null
+  suspect: string | null
+  suspect_name?: string | null
   start_date: string | null
   end_date: string | null
   verdict: string
+  verdict_details?: string
+  punishment_title?: string
+  punishment_description?: string
+  judge?: string | null
   notes: string
   court_room: string
   witnesses: string[]
@@ -29,9 +35,13 @@ export async function getTrials(): Promise<Trial[]> {
 
 export interface CreateTrialPayload {
   case: string
+  suspect?: string
   start_date?: string
   end_date?: string
   verdict?: string
+  verdict_details?: string
+  punishment_title?: string
+  punishment_description?: string
   court_room?: string
   notes?: string
 }

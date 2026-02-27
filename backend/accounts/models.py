@@ -26,6 +26,7 @@ class User(AbstractUser):
         ('complainant', 'Complainant'),
         ('coroner', 'Coroner'),
         ('judge', 'Judge'),
+        ('suspect', 'Suspect'),
     ] 
 	    # override email to be unique
     email = models.EmailField(unique=True)
@@ -120,6 +121,15 @@ class Person(models.Model):
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	first_name = models.CharField(max_length=120)
 	last_name = models.CharField(max_length=120)
+	national_id = models.CharField(max_length=32, unique=True, null=True, blank=True)
+	user = models.ForeignKey(
+		'User',
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='linked_person',
+	)
+	photo = models.ImageField(upload_to='persons/%Y/%m/%d', null=True, blank=True)
 	dob = models.DateField(null=True, blank=True)
 	aliases = models.JSONField(null=True, blank=True)
 	contact_info = models.JSONField(null=True, blank=True)

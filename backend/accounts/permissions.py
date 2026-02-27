@@ -108,6 +108,20 @@ class CanAccessGeneralReport(_HybridPermission):
         super().__init__('general_report.access', ROLES_GENERAL_REPORT)
 
 
+class CanAccessInterrogation(_HybridPermission):
+    def __init__(self):
+        super().__init__('interrogation.access', ['sergeant', 'detective', 'captain', 'chief'])
+
+class CanSubmitCaptainVerdict(_HybridPermission):
+    def __init__(self):
+        super().__init__('interrogation.captain_verdict', ['captain'])
+
+
+class CanChiefApprove(_HybridPermission):
+    def __init__(self):
+        super().__init__('interrogation.chief_approve', ['chief'])
+
+
 class CanAccessEvidence(_HybridPermission):
     def __init__(self):
         super().__init__('evidence.access', ROLES_EVIDENCE)

@@ -8,6 +8,7 @@ router = DefaultRouter()
 router.register(r'crime-reports', views.CrimeReportViewSet, basename='crime-report')
 router.register(r'persons', views.PersonViewSet, basename='person')
 router.register(r'suspects', views.SuspectViewSet, basename='suspect')
+router.register(r'interrogations', views.InterrogationViewSet, basename='interrogation')
 router.register(r'', views.CaseViewSet, basename='case')
 
 urlpatterns = [

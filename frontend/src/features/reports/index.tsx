@@ -21,12 +21,24 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getTrials, getGeneralReportStats } from '@/api/reports'
+import { getCases } from '@/api/cases'
 import { format } from 'date-fns'
-import { FileText, Plus } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { FileText, Plus, FileSearch } from 'lucide-react'
 import { TrialCreateDialog } from './components/trial-create-dialog'
+import { CaseFullFileSheet } from './components/case-full-file-sheet'
 
 export function ReportsPage() {
   const [trialDialogOpen, setTrialDialogOpen] = useState(false)
+  const [preselectedCaseIdForTrial, setPreselectedCaseIdForTrial] = useState<string | undefined>()
+  const [caseFileCaseId, setCaseFileCaseId] = useState<string | null>(null)
+  const [caseFileOpen, setCaseFileOpen] = useState(false)
   const {
     data: trials,
     isLoading: trialsLoading,
@@ -42,6 +54,23 @@ export function ReportsPage() {
     queryKey: ['dashboard-stats'],
     queryFn: getGeneralReportStats,
   })
+
+  const { data: cases } = useQuery({
+    queryKey: ['cases'],
+    queryFn: getCases,
+  })
+
+  const handleViewCaseFile = (caseId: string) => {
+    setCaseFileCaseId(caseId)
+    setCaseFileOpen(true)
+  }
+
+  const handleCreateTrialFromCaseFile = (caseId: string) => {
+    setPreselectedCaseIdForTrial(caseId)
+    setCaseFileOpen(false)
+    setCaseFileCaseId(null)
+    setTrialDialogOpen(true)
+  }
 
   return (
     <PageLayout
@@ -87,10 +116,40 @@ export function ReportsPage() {
         <div>
           <div className='mb-4 flex items-center justify-between'>
             <h2 className='text-lg font-semibold'>Trials</h2>
-            <Button size='sm' onClick={() => setTrialDialogOpen(true)}>
-              <Plus className='mr-2 h-4 w-4' />
-              Create Trial
-            </Button>
+            <div className='flex flex-wrap items-center gap-2'>
+              {cases?.length ? (
+                <>
+                  <Select
+                    value={caseFileCaseId ?? ''}
+                    onValueChange={(v) => setCaseFileCaseId(v)}
+                  >
+                    <SelectTrigger className='w-[220px]'>
+                      <SelectValue placeholder='Select case...' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cases.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.case_number} – {c.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={() => caseFileCaseId && handleViewCaseFile(caseFileCaseId)}
+                    disabled={!caseFileCaseId}
+                  >
+                    <FileSearch className='mr-2 h-4 w-4' />
+                    View Case File
+                  </Button>
+                </>
+              ) : null}
+              <Button size='sm' onClick={() => setTrialDialogOpen(true)}>
+                <Plus className='mr-2 h-4 w-4' />
+                Create Trial
+              </Button>
+            </div>
           </div>
           {trialsLoading ? (
             <Skeleton className='h-[200px] w-full' />
@@ -137,7 +196,24 @@ export function ReportsPage() {
         </div>
       </div>
 
-      <TrialCreateDialog open={trialDialogOpen} onOpenChange={setTrialDialogOpen} />
+      <TrialCreateDialog
+        open={trialDialogOpen}
+        onOpenChange={(open) => {
+          setTrialDialogOpen(open)
+          if (!open) setPreselectedCaseIdForTrial(undefined)
+        }}
+        preselectedCaseId={preselectedCaseIdForTrial}
+      />
+      <CaseFullFileSheet
+        open={caseFileOpen}
+        onOpenChange={setCaseFileOpen}
+        caseId={caseFileCaseId}
+        onCreateTrial={(cId) => {
+          setCaseFileCaseId(cId)
+          handleCreateTrialFromCaseFile(cId)
+        }}
+      />
     </PageLayout>
+  )
   )
 }

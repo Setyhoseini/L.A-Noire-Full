@@ -10,10 +10,18 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getMostWanted } from '@/api/most-wanted'
 import { format } from 'date-fns'
 import { AlertTriangle } from 'lucide-react'
+
+function formatRewardRial(amount: number): string {
+  if (amount >= 1_000_000) {
+    return `${(amount / 1_000_000).toFixed(0)}M ریال`
+  }
+  return `${amount.toLocaleString()} ریال`
+}
 
 export function MostWantedPage() {
   const {
@@ -29,8 +37,8 @@ export function MostWantedPage() {
 
   return (
     <PageLayout
-      title='Under Surveillance'
-      description='Suspects under pursuit or hot pursuit. Track days at large, crime degree, and reward.'
+      title='Most Wanted'
+      description='Suspects under pursuit or hot pursuit. Visible to all users. Reward in Rial.'
     >
       {isLoading ? (
         <Skeleton className='h-[200px] w-full' />
@@ -53,6 +61,7 @@ export function MostWantedPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Photo</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Case</TableHead>
@@ -66,6 +75,14 @@ export function MostWantedPage() {
             <TableBody>
               {items.map((item) => (
                 <TableRow key={item.id}>
+                  <TableCell>
+                    <Avatar className='h-10 w-10'>
+                      <AvatarImage src={item.photo_url ?? undefined} alt={item.person_name} />
+                      <AvatarFallback>
+                        {item.person_name?.substring(0, 2).toUpperCase() ?? '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell className='font-medium'>{item.person_name}</TableCell>
                   <TableCell>
                     <Badge
@@ -80,7 +97,7 @@ export function MostWantedPage() {
                   <TableCell>{item.days_under_pursuit}</TableCell>
                   <TableCell>{item.crime_degree ?? '—'}</TableCell>
                   <TableCell>{item.rank.toLocaleString()}</TableCell>
-                  <TableCell>${item.reward.toLocaleString()}</TableCell>
+                  <TableCell>{formatRewardRial(item.reward)}</TableCell>
                   <TableCell className='text-muted-foreground'>
                     {item.start_date
                       ? format(new Date(item.start_date), 'MMM d, yyyy')
