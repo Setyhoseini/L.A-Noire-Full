@@ -29,13 +29,20 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class CrimeReportSerializer(serializers.ModelSerializer):
+    assigned_cadet_name = serializers.SerializerMethodField()
+
     class Meta:
         model = CrimeReport
         fields = [
             'id', 'title', 'description', 'occurred_at', 'location', 'witnesses',
-            'status', 'created_at', 'case',
+            'status', 'created_at', 'case', 'assigned_cadet', 'assigned_cadet_name',
         ]
-        read_only_fields = ['id', 'status', 'created_at', 'case']
+        read_only_fields = ['id', 'status', 'created_at', 'case', 'assigned_cadet']
+
+    def get_assigned_cadet_name(self, obj):
+        if obj.assigned_cadet:
+            return obj.assigned_cadet.get_full_name() or obj.assigned_cadet.username
+        return None
 
 
 class DateOrDateTimeField(serializers.DateField):

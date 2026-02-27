@@ -31,12 +31,20 @@ def _user_has_role(user, role_names: list[str]) -> bool:
 
 # --- Role names per PDF (officer, prosecutor, clerk not in PDF - removed) ---
 ROLES_CASES = ['cadet', 'police officer', 'patrol officer', 'detective', 'sergeant', 'captain', 'chief', 'complainant']
+ROLES_CAN_SUBMIT_CRIME_REPORT = ['base user', 'cadet', 'police officer', 'patrol officer', 'detective', 'sergeant', 'captain', 'chief', 'complainant']
 ROLES_DETECTIVE_BOARD = ['detective']
 ROLES_SURVEILLANCE = ['detective', 'sergeant', 'captain', 'chief', 'police officer', 'patrol officer']
 ROLES_GENERAL_REPORT = ['judge', 'captain', 'chief']
 ROLES_EVIDENCE = ['detective', 'police officer', 'patrol officer', 'coroner', 'sergeant', 'captain']
 ROLES_ADMIN = ['administrator', 'admin']
 ROLES_APPROVE_CRIME_REPORTS = ['sergeant', 'captain', 'chief', 'detective']
+
+
+class CanSubmitCrimeReport(BasePermission):
+    """Submit crime reports/complaints. Base user, Cadet, Complainant, and all case roles."""
+
+    def has_permission(self, request, view):
+        return _user_has_role(request.user, ROLES_CAN_SUBMIT_CRIME_REPORT)
 
 
 class CanApproveCrimeReports(BasePermission):

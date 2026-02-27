@@ -15,6 +15,7 @@ export function hasAnyRole(userRoles: string[], requiredRoles: string[]): boolea
 
 /** Map route path to required roles. Empty array = all authenticated. null = no restriction. */
 const ROUTE_ROLES: Record<string, string[]> = {
+  '/submit-complaint': [ROLES.BASE_USER],
   '/board': [ROLES.DETECTIVE],
   '/most-wanted': [
     ROLES.DETECTIVE,
@@ -50,6 +51,7 @@ export function getRequiredRolesForPath(pathname: string): string[] | null {
   const normalized = pathname.replace(/\/$/, '') || '/'
   const exact = ROUTE_ROLES[normalized]
   if (exact) return exact
+  if (pathname.startsWith('/submit-complaint')) return ROUTE_ROLES['/submit-complaint'] ?? null
   if (pathname.startsWith('/admin')) return ROUTE_ROLES['/admin'] ?? null
   if (pathname.startsWith('/board')) return ROUTE_ROLES['/board'] ?? null
   if (pathname.startsWith('/most-wanted')) return ROUTE_ROLES['/most-wanted'] ?? null

@@ -56,6 +56,12 @@ const NAV_ITEMS: NavItemConfig[] = [
     icon: LayoutDashboard,
   },
   {
+    title: 'Submit Complaint',
+    url: '/submit-complaint',
+    icon: ClipboardList,
+    roles: [ROLES.BASE_USER],
+  },
+  {
     title: 'Cases & Complaints',
     url: '/cases',
     icon: ClipboardList,

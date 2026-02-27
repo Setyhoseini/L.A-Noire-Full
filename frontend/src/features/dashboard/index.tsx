@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 
 const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'Submit Complaint': ClipboardList,
   'Cases & Complaints': ClipboardList,
   'Detective Board': KanbanSquare,
   'Under Surveillance': Eye,
@@ -81,6 +82,7 @@ export function Dashboard() {
                         </CardHeader>
                         <CardContent>
                           <CardDescription>
+                            {item.title === 'Submit Complaint' && 'File a crime report or complaint for review.'}
                             {item.title === 'Cases & Complaints' && 'View and manage cases, complaints, suspects.'}
                             {item.title === 'Detective Board' && 'Link evidence and documents to solve cases.'}
                             {item.title === 'Under Surveillance' && 'Track suspects under pursuit.'}

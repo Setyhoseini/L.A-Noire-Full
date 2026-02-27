@@ -60,7 +60,7 @@ def reverse_seed(apps, schema_editor):
     for name in ROLE_PERMISSIONS:
         try:
             role = Role.objects.get(name=name)
-            role.permissions = None
+            role.permissions = []
             role.save()
         except Role.DoesNotExist:
             pass

@@ -27,6 +27,8 @@ export interface CrimeReport {
   status: string
   created_at: string
   case: string | null
+  assigned_cadet?: string | null
+  assigned_cadet_name?: string | null
 }
 
 export interface CreateCasePayload {
