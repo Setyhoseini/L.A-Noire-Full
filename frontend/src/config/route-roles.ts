@@ -29,6 +29,7 @@ const ROUTE_PERMISSIONS: Record<string, string[]> = {
 
 /** Fallback: required roles when permissions not available */
 const ROUTE_ROLES: Record<string, string[]> = {
+  '/submit-complaint': [ROLES.BASE_USER],
   '/board': [ROLES.DETECTIVE],
   '/most-wanted': [ROLES.DETECTIVE, ROLES.SERGEANT, ROLES.CAPTAIN, ROLES.CHIEF, ROLES.POLICE_OFFICER, ROLES.PATROL_OFFICER],
   '/reports': [ROLES.JUDGE, ROLES.CAPTAIN, ROLES.CHIEF],

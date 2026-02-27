@@ -1,16 +1,37 @@
+import random
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from accounts.models import Person, Suspect
+from accounts.models import Person, Suspect, User
 from .models import Case, CrimeReport
 from .serializers import CaseSerializer, CrimeReportSerializer, PersonSerializer, SuspectSerializer
-from accounts.permissions import CanAccessCases, CanApproveCrimeReports, CanAccessSurveillance
+from accounts.permissions import (
+    CanAccessCases,
+    CanApproveCrimeReports,
+    CanAccessSurveillance,
+    CanSubmitCrimeReport,
+    _user_has_role,
+)
+
+
+def _get_cadet_users():
+    """Return active users with Cadet role (role CharField or roles M2M)."""
+    from django.db.models import Q
+    cadets = list(
+        User.objects.filter(is_active=True)
+        .filter(
+            Q(role__iexact='cadet')
+            | Q(roles__name__iexact='Cadet')
+        )
+        .distinct()
+    )
+    return cadets
 
 
 class CaseViewSet(viewsets.ModelViewSet):
-    """Cases API. Role-based: Cadet, Officer, Detective, Sergeant, Captain, Chief, Complainant, Clerk."""
+    """Cases API. Cadet, Officer, Detective, Sergeant, Captain, Chief, Complainant. Base user DENIED."""
     queryset = Case.objects.all()
     serializer_class = CaseSerializer
     permission_classes = [IsAuthenticated, CanAccessCases]
@@ -46,13 +67,35 @@ class CaseViewSet(viewsets.ModelViewSet):
 
 
 class CrimeReportViewSet(viewsets.ModelViewSet):
-    """Crime reports / complaints. Same role access as Cases."""
+    """Crime reports / complaints. Base user can submit; Cadet receives for triage."""
     queryset = CrimeReport.objects.all()
     serializer_class = CrimeReportSerializer
-    permission_classes = [IsAuthenticated, CanAccessCases]
+    permission_classes = [IsAuthenticated, CanSubmitCrimeReport]
+
+    def get_queryset(self):
+        qs = CrimeReport.objects.all()
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return qs.none()
+        # Approvers see all
+        if _user_has_role(user, ['sergeant', 'captain', 'chief', 'detective']):
+            return qs
+        # Base user only (no case roles): only their own reports
+        if _user_has_role(user, ['base user']) and not _user_has_role(user, ['cadet', 'police officer', 'patrol officer', 'detective', 'sergeant', 'captain', 'chief', 'complainant']):
+            return qs.filter(reporter=user)
+        # Cadet: reports assigned to them or unassigned
+        if _user_has_role(user, ['cadet']):
+            from django.db.models import Q
+            return qs.filter(Q(assigned_cadet=user) | Q(assigned_cadet__isnull=True))
+        # Complainant, Police Officer, Patrol Officer: full list (or restrict as needed)
+        return qs
 
     def perform_create(self, serializer):
-        serializer.save(reporter=self.request.user)
+        report = serializer.save(reporter=self.request.user)
+        cadets = _get_cadet_users()
+        if cadets:
+            report.assigned_cadet = random.choice(cadets)
+            report.save()
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanApproveCrimeReports])
     def approve(self, request, pk=None):

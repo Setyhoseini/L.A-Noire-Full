@@ -78,6 +78,10 @@ class CrimeReport(models.Model):
     witnesses = models.JSONField(null=True, blank=True)
     reporter = models.ForeignKey('accounts.User', null=True, blank=True, on_delete=models.SET_NULL, related_name='crime_reports')
     status = models.CharField(max_length=32, choices=STATUS, default='pending_superior')
+    assigned_cadet = models.ForeignKey(
+        'accounts.User', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='assigned_cadet_reports', help_text='Cadet assigned for initial triage'
+    )
     assigned_superior = models.ForeignKey('accounts.User', null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_superior_reports')
     created_at = models.DateTimeField(default=timezone.now)
     attachments = models.ManyToManyField('cases.Attachment', blank=True, related_name='crime_report_attachments')
