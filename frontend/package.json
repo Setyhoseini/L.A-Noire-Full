@@ -13,6 +13,8 @@
     "knip": "knip"
   },
   "dependencies": {
+    "@xyflow/react": "^12.3.0",
+    "html-to-image": "^1.11.11",
     "@clerk/clerk-react": "^5.58.1",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",

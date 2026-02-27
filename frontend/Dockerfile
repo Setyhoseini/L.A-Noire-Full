@@ -1,19 +1,15 @@
-# frontend/Dockerfile
+# frontend/Dockerfile (dev: install deps only, compose runs pnpm run dev)
 FROM node:20-alpine
 
-# Set working directory
+# Install pnpm (project uses pnpm-lock.yaml)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-RUN npm install
+# Copy package files and install (no production build - compose runs dev server)
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# Copy the rest
 COPY . .
 
-# Build the app
-RUN npm run build
-
-# Serve with a simple server
-RUN npm install -g serve
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]
