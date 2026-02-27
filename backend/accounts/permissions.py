@@ -67,48 +67,65 @@ class HasRolePermission(BasePermission):
         return getattr(request.user, 'has_role_permission', lambda _: False)(self.permission_code)
 
 
-# Convenience classes - each maps to a permission code (admin can change role permissions)
-class CanAccessCases(HasRolePermission):
+# Convenience classes: permission-based (primary) + role fallback (when permissions not seeded)
+class _HybridPermission(BasePermission):
+    """Allow if user has permission OR has one of the fallback roles. Flexible for both systems."""
+
+    def __init__(self, permission_code: str, fallback_roles: list[str]):
+        self.permission_code = permission_code
+        self.fallback_roles = fallback_roles
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if getattr(request.user, 'has_role_permission', lambda _: False)(self.permission_code):
+            return True
+        return _user_has_role(request.user, self.fallback_roles)
+
+
+class CanAccessCases(_HybridPermission):
     def __init__(self):
-        super().__init__('cases.access')
+        super().__init__('cases.access', ROLES_CASES)
 
 
-class CanApproveCrimeReports(HasRolePermission):
+class CanApproveCrimeReports(_HybridPermission):
     def __init__(self):
-        super().__init__('cases.approve_reports')
+        super().__init__('cases.approve_reports', ROLES_APPROVE_CRIME_REPORTS)
 
 
-class CanAccessDetectiveBoard(HasRolePermission):
+class CanAccessDetectiveBoard(_HybridPermission):
     def __init__(self):
-        super().__init__('board.access')
+        super().__init__('board.access', ROLES_DETECTIVE_BOARD)
 
 
-class CanAccessSurveillance(HasRolePermission):
+class CanAccessSurveillance(_HybridPermission):
     def __init__(self):
-        super().__init__('surveillance.access')
+        super().__init__('surveillance.access', ROLES_SURVEILLANCE)
 
 
-class CanAccessGeneralReport(HasRolePermission):
+class CanAccessGeneralReport(_HybridPermission):
     def __init__(self):
-        super().__init__('general_report.access')
+        super().__init__('general_report.access', ROLES_GENERAL_REPORT)
 
 
-class CanAccessEvidence(HasRolePermission):
+class CanAccessEvidence(_HybridPermission):
     def __init__(self):
-        super().__init__('evidence.access')
+        super().__init__('evidence.access', ROLES_EVIDENCE)
 
 
-class IsAdmin(HasRolePermission):
+class IsAdmin(_HybridPermission):
     def __init__(self):
-        super().__init__('admin.access')
+        super().__init__('admin.access', ROLES_ADMIN)
 
 
 class IsAdminOrStaff(BasePermission):
-    """Allow Django staff (is_staff) OR users with admin.access. For initial setup, staff can access."""
+    """Allow Django staff (is_staff) OR users with admin.access OR admin/administrator role. For initial setup."""
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
         if getattr(request.user, 'is_staff', False):
             return True
-        return getattr(request.user, 'has_role_permission', lambda _: False)('admin.access')
+        if getattr(request.user, 'has_role_permission', lambda _: False)('admin.access'):
+            return True
+        return _user_has_role(request.user, ROLES_ADMIN)

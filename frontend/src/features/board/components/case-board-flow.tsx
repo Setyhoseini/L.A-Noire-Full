@@ -165,6 +165,7 @@ export function CaseBoardFlow({
           fitView
           deleteKeyCode={['Backspace', 'Delete']}
           connectionLineStyle={{ stroke: 'red' }}
+          defaultEdgeOptions={{ style: { stroke: 'red' } }}
         >
           <Background />
           <Controls />

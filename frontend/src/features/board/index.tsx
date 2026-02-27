@@ -44,7 +44,7 @@ function toFlowNode(n: BoardNode): Node {
 }
 
 function toFlowEdge(e: BoardEdge): Edge {
-  return { id: e.id, source: e.source, target: e.target }
+  return { id: e.id, source: e.source, target: e.target, style: { stroke: 'red' } }
 }
 
 function toBoardNode(n: Node): BoardNode {
