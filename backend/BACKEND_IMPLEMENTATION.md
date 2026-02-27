@@ -106,11 +106,12 @@ backend/
 
 - `_user_has_role(user, role_names)` – checks `User.role` and `User.roles`
 - Permission classes:
-  - `CanAccessCases` – Cadet, Police Officer, Patrol Officer, Detective, Sergeant, Captain, Chief, Complainant, Officer, Clerk
+  - `CanAccessCases` – Cadet, Police Officer, Patrol Officer, Detective, Sergeant, Captain, Chief, Complainant (Base user DENIED)
+  - `CanSubmitCrimeReport` – Base user, Cadet, Complainant, and all case roles (submit complaints only)
   - `CanAccessDetectiveBoard` – Detective
-  - `CanAccessSurveillance` – Detective, Sergeant, Captain, Chief, Police Officer, Patrol Officer, Officer
-  - `CanAccessGeneralReport` – Judge, Captain, Chief, Prosecutor
-  - `CanAccessEvidence` – Detective, Police Officer, Patrol Officer, Coroner, Sergeant, Captain, Officer, Clerk
+  - `CanAccessSurveillance` – Detective, Sergeant, Captain, Chief, Police Officer, Patrol Officer
+  - `CanAccessGeneralReport` – Judge, Captain, Chief
+  - `CanAccessEvidence` – Detective, Police Officer, Patrol Officer, Coroner, Sergeant, Captain
   - `CanApproveCrimeReports` – Sergeant, Captain, Chief, Detective
   - `IsAdmin` – Administrator, admin
 
@@ -154,8 +155,9 @@ backend/
 - `report_type`, `title`, `content`, `case`, `created_at`
 
 **`CrimeReport`**
-- `title`, `description`, `occurred_at`, `location`, `witnesses`, `reporter`, `status`, `assigned_superior`, `case`
+- `title`, `description`, `occurred_at`, `location`, `witnesses`, `reporter`, `status`, `assigned_cadet`, `assigned_superior`, `case`
 - Status: `pending_superior`, `approved`, `returned`
+- On create: assigned to a random cadet for triage
 - `approve_by_superior(actor)` – creates `Case`, links it
 - `return_to_reporter(actor, reason=...)`
 - `log(actor, action, reason, details)` – writes to `AuditLog`
@@ -173,8 +175,8 @@ backend/
 
 | ViewSet | Base URL | Permission | Purpose |
 |---------|----------|------------|---------|
-| `CaseViewSet` | `/api/cases/` | CanAccessCases | Case CRUD |
-| `CrimeReportViewSet` | `/api/cases/crime-reports/` | CanAccessCases | Crime report CRUD |
+| `CaseViewSet` | `/api/cases/` | CanAccessCases | Case CRUD (Base user denied) |
+| `CrimeReportViewSet` | `/api/cases/crime-reports/` | CanSubmitCrimeReport | Submit complaints; Base user can create, sees only own; Cadet sees assigned |
 | `CrimeReportViewSet.approve` | `crime-reports/{id}/approve/` | CanApproveCrimeReports | Approve report, create case |
 | `CrimeReportViewSet.return_report` | `crime-reports/{id}/return_report/` | CanApproveCrimeReports | Return report |
 
@@ -230,16 +232,23 @@ Router: `''` (cases), `crime-reports/`, `persons/`, `suspects/`
 
 ### 8.1 Models
 
-- No models; uses `Case` and `Evidence` from other apps.
+**`CaseBoard`**
+- OneToOne with `Case`; stores `nodes` and `edges` (JSON) for React Flow board state.
 
 ### 8.2 Views (`board/views.py`)
 
 - **`board_overview`** – GET, permission `CanAccessDetectiveBoard`
-- Returns open cases and evidence for detective board.
+- Returns open cases for board selection.
+- **`case_board_detail`** – GET `/api/board/cases/<uuid>/`
+- Returns case, evidences, and saved board state (nodes, edges).
+- **`case_board_save`** – PATCH `/api/board/cases/<uuid>/save/`
+- Saves board state (nodes, edges) for a case.
 
 ### 8.3 URLs (`board/urls.py`)
 
 - `''` → `GET /api/board/`
+- `cases/<uuid>/` → `GET /api/board/cases/<uuid>/`
+- `cases/<uuid>/save/` → `PATCH /api/board/cases/<uuid>/save/`
 
 ---
 
@@ -311,15 +320,18 @@ Router: `''` (cases), `crime-reports/`, `persons/`, `suspects/`
 
 ## 13. Role-to-Resource Mapping
 
-| Resource | Roles |
-|----------|-------|
-| Cases & Complaints | Cadet, Police Officer, Patrol Officer, Detective, Sergeant, Captain, Chief, Complainant, Officer, Clerk |
-| Approve/Return Crime Reports | Sergeant, Captain, Chief, Detective |
-| Detective Board | Detective |
-| Under Surveillance (Most Wanted) | Detective, Sergeant, Captain, Chief, Police Officer, Patrol Officer, Officer |
-| General Report (Trials) | Judge, Captain, Chief, Prosecutor |
-| Evidence | Detective, Police Officer, Patrol Officer, Coroner, Sergeant, Captain, Officer, Clerk |
-| Admin | Administrator, admin |
+| Resource | Permission Code | Roles |
+|----------|-----------------|-------|
+| Submit Complaint | (CanSubmitCrimeReport) | Base user, Cadet, Complainant, Police Officer, Patrol Officer, Detective, Sergeant, Captain, Chief |
+| Cases & Complaints | `cases.access` | Cadet, Police Officer, Patrol Officer, Detective, Sergeant, Captain, Chief, Complainant (Base user cannot view cases) |
+| Approve/Return Crime Reports | `cases.approve_reports` | Sergeant, Captain, Chief, Detective |
+| Detective Board | `board.access` | Detective |
+| Under Surveillance (Most Wanted) | `surveillance.access` | Detective, Sergeant, Captain, Chief, Police Officer, Patrol Officer |
+| General Report (Trials) | `general_report.access` | Judge, Captain, Chief |
+| Evidence | `evidence.access` | Detective, Police Officer, Patrol Officer, Coroner, Sergeant, Captain |
+| Admin | `admin.access` | Administrator, admin |
+
+Permissions are seeded in `0005_seed_role_permissions` and stored in `Role.permissions` (JSON). Use `user.has_role_permission('cases.access')` or `HasRolePermission('cases.access')` for permission checks.
 
 ---
 

@@ -172,7 +172,6 @@ const AuthenticatedErrorsErrorRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
@@ -184,17 +183,18 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/submit-complaint': typeof AuthenticatedSubmitComplaintRoute
+  '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/admin/': typeof AuthenticatedAdminIndexRoute
-  '/board/': typeof AuthenticatedBoardIndexRoute
-  '/cases/': typeof AuthenticatedCasesIndexRoute
-  '/evidence/': typeof AuthenticatedEvidenceIndexRoute
-  '/most-wanted/': typeof AuthenticatedMostWantedIndexRoute
-  '/reports/': typeof AuthenticatedReportsIndexRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/board': typeof AuthenticatedBoardIndexRoute
+  '/cases': typeof AuthenticatedCasesIndexRoute
+  '/evidence': typeof AuthenticatedEvidenceIndexRoute
+  '/most-wanted': typeof AuthenticatedMostWantedIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -253,7 +253,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/settings'
     | '/forgot-password'
     | '/otp'
@@ -265,17 +264,18 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/submit-complaint'
+    | '/'
     | '/errors/$error'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
-    | '/admin/'
-    | '/board/'
-    | '/cases/'
-    | '/evidence/'
-    | '/most-wanted/'
-    | '/reports/'
+    | '/admin'
+    | '/board'
+    | '/cases'
+    | '/evidence'
+    | '/most-wanted'
+    | '/reports'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -349,7 +349,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
-      fullPath: '/'
+      fullPath: ''
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -447,42 +447,42 @@ declare module '@tanstack/react-router' {
     '/_authenticated/reports/': {
       id: '/_authenticated/reports/'
       path: '/reports'
-      fullPath: '/reports/'
+      fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/most-wanted/': {
       id: '/_authenticated/most-wanted/'
       path: '/most-wanted'
-      fullPath: '/most-wanted/'
+      fullPath: '/most-wanted'
       preLoaderRoute: typeof AuthenticatedMostWantedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/evidence/': {
       id: '/_authenticated/evidence/'
       path: '/evidence'
-      fullPath: '/evidence/'
+      fullPath: '/evidence'
       preLoaderRoute: typeof AuthenticatedEvidenceIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cases/': {
       id: '/_authenticated/cases/'
       path: '/cases'
-      fullPath: '/cases/'
+      fullPath: '/cases'
       preLoaderRoute: typeof AuthenticatedCasesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/board/': {
       id: '/_authenticated/board/'
       path: '/board'
-      fullPath: '/board/'
+      fullPath: '/board'
       preLoaderRoute: typeof AuthenticatedBoardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/admin'
-      fullPath: '/admin/'
+      fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
